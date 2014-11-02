@@ -8,7 +8,7 @@ import java.util.Set;
 /**
  * Created by caiche on 2014/11/2.
  */
-public class Caculator {
+public class Calculate {
     private List<String> mAnswerList=new ArrayList<String>();
 
     public List<String> getAnswerList() {
@@ -106,7 +106,7 @@ public class Caculator {
 
     public static final List<String> easyCount(int[] curRandNums)
     {
-        Caculator cal=new Caculator();
+        Calculate cal=new Calculate();
         cal.count(new Data(curRandNums));
         Set<String> set=new HashSet<String>(cal.getAnswerList());
         return new ArrayList<String>(set);
