@@ -9,6 +9,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.util.List;
+
 
 public class Count24Activity extends ActionBarActivity {
 
@@ -31,7 +33,7 @@ public class Count24Activity extends ActionBarActivity {
 
                 int[] numbers = new int[4];
                 for(int i=0; i<4; i++) {
-                    numbers[i] = (int)(Math.random()*3);
+                    numbers[i] = (int)(Math.random()*10 + 1);
                 }
 
                 mEditNumbers.setText(String.valueOf(numbers[0])
@@ -40,7 +42,30 @@ public class Count24Activity extends ActionBarActivity {
                         + "," + numbers[3]);
             }
         });
+
         mButtonGetAnswer = (Button)findViewById(R.id.button_answer);
+        mButtonGetAnswer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String[] numbers = mEditNumbers.getText().toString().split(",");
+                if (numbers.length != 4) {
+                    mTextAnswer.setText("We can only handle 4 numbers");
+                    return;
+                }
+
+                List<String> resultList = Calculate.easyCount(
+                        new int[] {Integer.valueOf(numbers[0]),
+                                   Integer.valueOf(numbers[1]),
+                                   Integer.valueOf(numbers[2]),
+                                   Integer.valueOf(numbers[3])});
+                if (resultList.size() > 0) {
+                    mTextAnswer.setText(resultList.get(0) + " = 24");
+                }
+                else {
+                    mTextAnswer.setText("No Answer");
+                }
+            }
+        });
     }
 
 
