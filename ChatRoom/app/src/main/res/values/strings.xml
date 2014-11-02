@@ -2,7 +2,10 @@
 <resources>
 
     <string name="app_name">ChatRoom</string>
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="input_message">Input a message</string>
+    <string name="send">Send</string>
+    <string name="chatroom_title">ChatRoomList</string>
+    <string name="title_activity_chat">ChatActivity</string>
 
 </resources>
