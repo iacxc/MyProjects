@@ -26,10 +26,17 @@
 
     </LinearLayout>
 
-    <EditText
+    <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/edit_numbers"/>
+        android:id="@+id/numbers_tableLayout">
+        <TableRow >
+            <EditText style="@style/EditCard"/>
+            <EditText style="@style/EditCard"/>
+            <EditText style="@style/EditCard"/>
+            <EditText style="@style/EditCard"/>
+        </TableRow>
+    </TableLayout>
 
     <LinearLayout
         android:orientation="horizontal"

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    </style>
+
+    <style name="EditCard">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_margin">5dp</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:padding">5dp</item>
+        <item name="android:inputType">number</item>
+        <item name="android:hint">0</item>
+        <item name="android:textSize">25sp</item>
+    </style>
+</resources>

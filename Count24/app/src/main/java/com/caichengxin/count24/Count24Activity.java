@@ -7,6 +7,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.util.List;
@@ -16,7 +18,7 @@ public class Count24Activity extends ActionBarActivity {
 
     private Button mButtonGenerate, mButtonGetAnswer;
     private TextView mTextAnswer;
-    private EditText mEditNumbers;
+    private EditText[] mEditNumbers;
 
 
     @Override
@@ -24,22 +26,25 @@ public class Count24Activity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_count24);
 
-        mEditNumbers = (EditText)findViewById(R.id.edit_numbers);
+        TableLayout tableLayout = (TableLayout)findViewById(R.id.numbers_tableLayout);
+
+        TableRow numberRow = (TableRow)tableLayout.getChildAt(0);
+
+        mEditNumbers = new EditText[]{(EditText)numberRow.getChildAt(0),
+                (EditText)numberRow.getChildAt(1),
+                (EditText)numberRow.getChildAt(2),
+                (EditText)numberRow.getChildAt(3)};
+
         mTextAnswer = (TextView)findViewById(R.id.text_answer);
         mButtonGenerate = (Button)findViewById(R.id.button_generate);
         mButtonGenerate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                int[] numbers = new int[4];
                 for(int i=0; i<4; i++) {
-                    numbers[i] = (int)(Math.random()*10 + 1);
+                    mEditNumbers[i].setText(String.valueOf(Math.random()*10 + 1));
                 }
 
-                mEditNumbers.setText(String.valueOf(numbers[0])
-                        + "," + numbers[1]
-                        + "," + numbers[2]
-                        + "," + numbers[3]);
+
             }
         });
 
@@ -47,17 +52,11 @@ public class Count24Activity extends ActionBarActivity {
         mButtonGetAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String[] numbers = mEditNumbers.getText().toString().split(",");
-                if (numbers.length != 4) {
-                    mTextAnswer.setText("We can only handle 4 numbers");
-                    return;
-                }
-
                 List<String> resultList = Calculate.easyCount(
-                        new int[] {Integer.valueOf(numbers[0]),
-                                   Integer.valueOf(numbers[1]),
-                                   Integer.valueOf(numbers[2]),
-                                   Integer.valueOf(numbers[3])});
+                        new int[] {Integer.valueOf(mEditNumbers[0].getText().toString()),
+                                   Integer.valueOf(mEditNumbers[1].getText().toString()),
+                                   Integer.valueOf(mEditNumbers[2].getText().toString()),
+                                   Integer.valueOf(mEditNumbers[3].getText().toString())});
                 if (resultList.size() > 0) {
                     mTextAnswer.setText(resultList.get(0) + " = 24");
                 }
@@ -81,10 +80,17 @@ public class Count24Activity extends ActionBarActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.new_game:
+                for(int i=0; i< 4; i++)
+                    mEditNumbers[i].setText("");
+
+                mTextAnswer.setText("");
+                return true;
+            case  R.id.action_settings:
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 }

@@ -2,6 +2,7 @@
 <resources>
 
     <string name="app_name">Count24</string>
+    <string name="new_game">New Game</string>
     <string name="action_settings">Settings</string>
     <string name="label_input_numbers">Input 4 numbers:</string>
     <string name="label_auto_generate">Auto generate</string>
