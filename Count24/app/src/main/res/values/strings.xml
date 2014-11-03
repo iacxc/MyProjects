@@ -7,5 +7,7 @@
     <string name="label_input_numbers">Input 4 numbers:</string>
     <string name="label_auto_generate">Auto generate</string>
     <string name="label_answer">Get Answer</string>
+    <string name="format_answer">%1$s =24; elapsed %2$d ms</string>
+    <string name="no_answer">No Answer</string>
 
 </resources>

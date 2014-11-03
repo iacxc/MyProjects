@@ -11,14 +11,18 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.List;
 
 
 public class Count24Activity extends ActionBarActivity {
 
+    private Date mStartDate;
     private Button mButtonGenerate, mButtonGetAnswer;
     private TextView mTextAnswer;
     private EditText[] mEditNumbers;
+
 
 
     @Override
@@ -41,8 +45,10 @@ public class Count24Activity extends ActionBarActivity {
             @Override
             public void onClick(View view) {
                 for(int i=0; i<4; i++) {
-                    mEditNumbers[i].setText(String.valueOf(Math.random()*10 + 1));
+                    mEditNumbers[i].setText(
+                            String.valueOf((int)(Math.random()*10) + 1));
                 }
+                mStartDate = new Date();
 
 
             }
@@ -57,11 +63,16 @@ public class Count24Activity extends ActionBarActivity {
                                    Integer.valueOf(mEditNumbers[1].getText().toString()),
                                    Integer.valueOf(mEditNumbers[2].getText().toString()),
                                    Integer.valueOf(mEditNumbers[3].getText().toString())});
+
                 if (resultList.size() > 0) {
-                    mTextAnswer.setText(resultList.get(0) + " = 24");
+                    Date now = new Date();
+                    String format_answer = getResources().getString(R.string.format_answer);
+                    mTextAnswer.setText(String.format(format_answer,
+                            resultList.get(0),
+                            now.getTime() - mStartDate.getTime()));
                 }
                 else {
-                    mTextAnswer.setText("No Answer");
+                    mTextAnswer.setText(R.string.no_answer);
                 }
             }
         });
