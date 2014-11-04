@@ -3,7 +3,6 @@ package com.caichengxin.chatroom;
 import android.content.Context;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 /**
  * Created by caiche on 2014/11/2.
@@ -21,7 +20,7 @@ public class MessageLab {
 
         for (int i=0; i< 5; i++) {
             Message message = new Message();
-            message.setSender(new Person("person#" + i));
+//            message.setSender(new User("person#" + i));
             message.setText("message #" + i);
 
             mChatMessageList.add(message);

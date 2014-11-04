@@ -10,7 +10,7 @@ public class Message
 {
     private UUID mId;
     private String mText;
-    private Person mSender;
+    private User mSender;
     private String mSenderImage;
     private Date mDate;
 
@@ -32,11 +32,11 @@ public class Message
         mText = text;
     }
 
-    public Person getSender() {
+    public User getSender() {
         return mSender;
     }
 
-    public void setSender(Person sender) {
+    public void setSender(User sender) {
         mSender = sender;
     }
 
