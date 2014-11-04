@@ -9,11 +9,11 @@ import java.util.UUID;
  */
 public class Chat {
 
-    UUID mId;
-    String mName;
-    Date mDate;
-    String mLastMessageText;
-    ArrayList<User> mUserList;
+    private UUID mId;
+    private String mName;
+    private Date mDate;
+    private String mLastMessageText;
+    private ArrayList<User> mUserList;
 
     public Chat(User owner)
     {

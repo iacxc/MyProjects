@@ -18,9 +18,9 @@ import java.util.UUID;
  * Created by caiche on 2014/11/2.
  */
 public class ChatFragment extends Fragment {
-    public static final String TAG = "chatroom.ChaFragment";
+    public static final String TAG = "chatroom.ChatFragment";
 
-    public static final String EXTRA_ID = "chatroom.ID";
+    public static final String EXTRA_ID = "chatroom.Chat_ID";
 
     private ListView mLvChatMessages;
     private Button mButtonSend;

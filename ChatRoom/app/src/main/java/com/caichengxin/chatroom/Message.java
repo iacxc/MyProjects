@@ -23,7 +23,6 @@ public class Message
         return mId;
     }
 
-
     public String getText() {
         return mText;
     }

@@ -1,9 +1,6 @@
 package com.caichengxin.chatroom;
 
-import android.content.Context;
-
 import java.util.ArrayList;
-import java.util.UUID;
 
 /**
  * Created by caiche on 2014/11/4.

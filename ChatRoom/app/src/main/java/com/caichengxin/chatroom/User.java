@@ -1,7 +1,5 @@
 package com.caichengxin.chatroom;
 
-import java.util.UUID;
-
 /**
  * Created by caiche on 2014/11/3.
  */
