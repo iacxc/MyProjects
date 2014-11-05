@@ -9,9 +9,10 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:background="@color/bright_foreground_material_dark"
-        android:id="@+id/list_message">
+        android:id="@+id/list_message"
+        android:stackFromBottom="true"
+        android:transcriptMode="alwaysScroll"  />
 
-    </ListView>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

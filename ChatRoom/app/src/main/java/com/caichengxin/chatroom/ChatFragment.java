@@ -25,6 +25,7 @@ public class ChatFragment extends Fragment {
     public static final String EXTRA_ID = "chatroom.ID";
 
     private Chat mChat;
+    private ArrayList<Message> mChatMessages;
 
     private ListView mLvChatMessages;
     private Button mButtonSend;
@@ -46,7 +47,6 @@ public class ChatFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-
         UUID chatId = (UUID)getArguments().getSerializable(EXTRA_ID);
         mChat = ChatLab.get(getActivity()).getChat(chatId);
 
@@ -55,6 +55,9 @@ public class ChatFragment extends Fragment {
 
             MessageLab.get(getActivity()).init(mChat);
         }
+
+        mChatMessages =  MessageLab.get(getActivity()).getChatMessageList();
+
     }
 
 
@@ -69,10 +72,8 @@ public class ChatFragment extends Fragment {
         if (actionBar != null)
             actionBar.setDisplayHomeAsUpEnabled(true);
 
-         ArrayList<Message> chatMessages =
-                 MessageLab.get(getActivity()).getChatMessageList();
 
-        final MessageAdapter adapter = new MessageAdapter(chatMessages);
+        final  MessageAdapter adapter = new MessageAdapter(mChatMessages);
 
         mLvChatMessages = (ListView)view.findViewById(R.id.list_message);
         mLvChatMessages.setAdapter(adapter);
@@ -86,7 +87,7 @@ public class ChatFragment extends Fragment {
                 Message message = new Message(mChat.getId(),
                         ChatListActivity.ME, mEditMessage.getText().toString());
 
-                MessageLab.get(getActivity()).addMessage(message);
+                mChatMessages.add(message);
 
                 adapter.notifyDataSetChanged();
 

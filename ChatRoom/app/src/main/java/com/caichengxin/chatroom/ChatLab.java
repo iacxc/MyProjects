@@ -18,7 +18,7 @@ public class ChatLab
     private static ChatLab sChatLab;
     private Context mAppContext;
 
-    private void loadChats()
+    private void create()
     {
         mChats = new ArrayList<Chat>();
 
@@ -49,7 +49,7 @@ public class ChatLab
     private ChatLab(Context appContext) {
         mAppContext = appContext;
 
-        loadChats();
+        create();
 
     }
 

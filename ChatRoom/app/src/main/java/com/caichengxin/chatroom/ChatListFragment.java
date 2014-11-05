@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -25,6 +26,14 @@ public class ChatListFragment extends Fragment
 
     private ListView mLvChatRooms;
     private ArrayList<Chat> mChats;
+
+
+    private void startChat(Chat chat) {
+        Intent i = new Intent(getActivity(), ChatActivity.class);
+        i.putExtra(ChatFragment.EXTRA_ID, chat.getId());
+
+        startActivity(i);
+    }
 
 
     @Override
@@ -45,7 +54,7 @@ public class ChatListFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_chat_list,
                 container, false);
 
-        ChatRoomAdapter adapter = new ChatRoomAdapter(mChats);
+        ChatListAdapter adapter = new ChatListAdapter(mChats);
         mLvChatRooms = (ListView)view.findViewById(R.id.list_chat);
         mLvChatRooms.setAdapter(adapter);
 
@@ -55,12 +64,7 @@ public class ChatListFragment extends Fragment
 
                 Chat chat = (Chat)(parent.getAdapter()).getItem(position);
 
-                Log.i(TAG, chat.getName() + " was clicked");
-
-                Intent i = new Intent(getActivity(), ChatActivity.class);
-                i.putExtra(ChatFragment.EXTRA_ID, chat.getId());
-
-                startActivityForResult(i, 0);
+                startChat(chat);
             }
         });
 
@@ -79,7 +83,22 @@ public class ChatListFragment extends Fragment
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.new_chat:
-                Log.i(TAG, "new chat room");
+                Toast.makeText(getActivity(),
+                        R.string.new_chat, Toast.LENGTH_LONG).show();
+
+                Chat chat = new Chat(ChatListActivity.ME);
+
+                User user= UserLab.get().getRandomUser();
+                chat.addUser(user);
+                chat.setName(user.getName());
+
+                mChats.add(chat);
+
+                ((ChatListAdapter)mLvChatRooms.getAdapter())
+                        .notifyDataSetChanged();
+
+                startChat(chat);
+
                 return true;
             case R.id.action_settings:
                 return true;
@@ -88,10 +107,10 @@ public class ChatListFragment extends Fragment
         }
     }
 
-    private class ChatRoomAdapter extends ArrayAdapter<Chat>
+    private class ChatListAdapter extends ArrayAdapter<Chat>
     {
 
-        public ChatRoomAdapter(ArrayList<Chat> chats) {
+        public ChatListAdapter(ArrayList<Chat> chats) {
             super(getActivity(), android.R.layout.simple_list_item_1, chats);
         }
     }

@@ -32,10 +32,6 @@ public class MessageLab {
         return mChatMessageList;
     }
 
-    public void addMessage(Message msg) {
-        mChatMessageList.add(msg);
-    }
-
     public void init(Chat chat) {
         mChatMessageList.clear();
 
@@ -46,7 +42,7 @@ public class MessageLab {
                     userList.get((int)(Math.random() * userList.size())),
                     "Message # " + i);
 
-            addMessage(msg);
+            mChatMessageList.add(msg);
         }
     }
 

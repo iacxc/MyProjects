@@ -10,7 +10,15 @@ import java.util.UUID;
  */
 public class UserLab {
     private static final String[] sNames =
-            new String[] {"CaiChengxin", "WangHailong", "ZhuYadong", "NiJun"};
+            new String[]{"CaiChengxin",
+                    "WangHailong",
+                    "ZhuYadong",
+                    "NiJun",
+                    "User1",
+                    "User2",
+                    "User3",
+                    "User4"
+            };
 
     private ArrayList<User> mUsers;
 
