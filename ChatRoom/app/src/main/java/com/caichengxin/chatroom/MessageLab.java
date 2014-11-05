@@ -14,24 +14,10 @@ public class MessageLab {
     private static MessageLab sMessageLab;
     private Context mAppContext;
 
-    private void loadChatMessages()
-    {
-        mChatMessageList = new ArrayList<Message>();
-
-        for (int i=0; i< 5; i++) {
-            Message message = new Message();
-//            message.setSender(new User("person#" + i));
-            message.setText("message #" + i);
-
-            mChatMessageList.add(message);
-        }
-    }
-
 
     private MessageLab(Context appContext) {
         mAppContext = appContext;
-
-        loadChatMessages();
+        mChatMessageList = new ArrayList<Message>();
 
     }
 
@@ -45,4 +31,20 @@ public class MessageLab {
     public ArrayList<Message> getChatMessageList() {
         return mChatMessageList;
     }
+
+    public void init(Chat chat) {
+        mChatMessageList.clear();
+
+        ArrayList<User> userList = chat.getUserList();
+
+        for (int i = 0; i < 10; i++) {
+            Message msg = new Message(chat.getId(),
+                    userList.get((int)(Math.random() * userList.size())),
+                    "Message # " + i);
+
+            mChatMessageList.add(msg);
+        }
+    }
+
+
 }

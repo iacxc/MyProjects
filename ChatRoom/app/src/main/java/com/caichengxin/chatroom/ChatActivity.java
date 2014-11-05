@@ -10,10 +10,10 @@ public class ChatActivity extends SingleFragmentActivity {
 
     @Override
     protected Fragment createFragment() {
-        UUID roomId = (UUID)getIntent()
+        UUID chatId = (UUID)getIntent()
                 .getSerializableExtra(ChatFragment.EXTRA_ID);
 
-        return ChatFragment.newInstance(roomId);
+        return ChatFragment.newInstance(chatId);
 
     }
 

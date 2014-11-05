@@ -8,12 +8,13 @@ import java.util.UUID;
  */
 public class Message
 {
-    private UUID mId;
+    private UUID mChatId;
     private String mText;
     private User mSender;
     private String mSenderImage;
     private Date mDate;
 
+<<<<<<< HEAD
     public Message() {
         mId = UUID.randomUUID();
         mDate = new Date();
@@ -28,15 +29,17 @@ public class Message
     }
 
     public void setText(String text) {
+=======
+    public Message(UUID chatId, User sender, String text) {
+        mChatId = chatId;
+        mSender = sender;
+>>>>>>> 57285199702514457dcd98444512b32c4b8003e5
         mText = text;
+        mDate = new Date();
     }
 
     public User getSender() {
         return mSender;
-    }
-
-    public void setSender(User sender) {
-        mSender = sender;
     }
 
     public String getSenderImage() {
@@ -51,11 +54,9 @@ public class Message
         return mDate;
     }
 
-    public void setDate(Date date) {
-        mDate = date;
-    }
+    public String getText() { return mText; }
 
     public String toString() {
-        return mText;
+        return mText + ", from " + mSender;
     }
 }
