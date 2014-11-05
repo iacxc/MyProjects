@@ -9,7 +9,9 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -22,15 +24,16 @@ public class ChatFragment extends Fragment {
 
     public static final String EXTRA_ID = "chatroom.ID";
 
+    private Chat mChat;
+
     private ListView mLvChatMessages;
     private Button mButtonSend;
     private EditText mEditMessage;
-    private ArrayList<Message> mChatMessages;
 
-    public static ChatFragment newInstance(UUID roomId)
+    public static ChatFragment newInstance(UUID chatId)
     {
         Bundle args = new Bundle();
-        args.putSerializable(EXTRA_ID, roomId);
+        args.putSerializable(EXTRA_ID, chatId);
 
         ChatFragment fragment =  new ChatFragment();
         fragment.setArguments(args);
@@ -43,13 +46,15 @@ public class ChatFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
+
         UUID chatId = (UUID)getArguments().getSerializable(EXTRA_ID);
-        Chat chat = ChatLab.get(getActivity()).getChat(chatId);
+        mChat = ChatLab.get(getActivity()).getChat(chatId);
 
-        if (chat != null)
-            getActivity().setTitle(chat.getName());
+        if (mChat != null) {
+            getActivity().setTitle(mChat.getName());
 
-        mChatMessages = MessageLab.get(getActivity()).getChatMessageList();
+            MessageLab.get(getActivity()).init(mChat);
+        }
     }
 
 
@@ -64,7 +69,11 @@ public class ChatFragment extends Fragment {
         if (actionBar != null)
             actionBar.setDisplayHomeAsUpEnabled(true);
 
-        final ChatMessageAdapter adapter = new ChatMessageAdapter(mChatMessages);
+         ArrayList<Message> chatMessages =
+                 MessageLab.get(getActivity()).getChatMessageList();
+
+        final MessageAdapter adapter = new MessageAdapter(chatMessages);
+
         mLvChatMessages = (ListView)view.findViewById(R.id.list_message);
         mLvChatMessages.setAdapter(adapter);
 
@@ -74,11 +83,11 @@ public class ChatFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
-                Message message = new Message();
-//                message.setSender(new User("person1"));
-                message.setText(mEditMessage.getText().toString());
+                Message message = new Message(mChat.getId(),
+                        ChatListActivity.ME, mEditMessage.getText().toString());
 
-                mChatMessages.add(message);
+                MessageLab.get(getActivity()).addMessage(message);
+
                 adapter.notifyDataSetChanged();
 
                 mEditMessage.setText(null);
@@ -89,12 +98,40 @@ public class ChatFragment extends Fragment {
     }
 
 
-    private class ChatMessageAdapter extends ArrayAdapter<Message>
+    private class MessageAdapter extends ArrayAdapter<Message>
     {
 
-        public ChatMessageAdapter(ArrayList<Message> chatMessageList) {
-            super(getActivity(), android.R.layout.simple_list_item_1,
-                    chatMessageList);
+        public MessageAdapter(ArrayList<Message> messageList) {
+            super(getActivity(), 0,   messageList);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if (convertView == null)
+                convertView = getActivity().getLayoutInflater()
+                        .inflate(R.layout.list_item_message, null);
+
+            Message msg = getItem(position);
+
+            TextView textMessage =
+                    (TextView)convertView.findViewById(R.id.text_message);
+            textMessage.setText(msg.getText());
+
+            ImageView imgOther =
+                    (ImageView)convertView.findViewById(R.id.image_other);
+            ImageView imgMe =
+                    (ImageView)convertView.findViewById(R.id.image_me);
+
+            if (msg.getSender().equals(ChatListActivity.ME)) {
+                imgMe.setVisibility(View.VISIBLE);
+                imgOther.setVisibility(View.INVISIBLE);
+            }
+            else {
+                imgMe.setVisibility(View.INVISIBLE);
+                imgOther.setVisibility(View.VISIBLE);
+            }
+
+            return convertView;
         }
     }
 }
