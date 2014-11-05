@@ -1,29 +1,22 @@
 package com.caichengxin.chatroom;
 
-import android.content.Context;
-
 import java.util.ArrayList;
 
-/**
- * Created by caiche on 2014/11/2.
- */
+
 public class MessageLab {
 
-    private ArrayList<Message> mChatMessageList;
+    private final ArrayList<Message> mChatMessageList;
 
     private static MessageLab sMessageLab;
-    private Context mAppContext;
 
-
-    private MessageLab(Context appContext) {
-        mAppContext = appContext;
+    private MessageLab() {
         mChatMessageList = new ArrayList<Message>();
 
     }
 
-    public static MessageLab get(Context c) {
+    public static MessageLab get() {
         if (sMessageLab == null) {
-            sMessageLab = new MessageLab(c.getApplicationContext());
+            sMessageLab = new MessageLab();
         }
         return sMessageLab;
     }

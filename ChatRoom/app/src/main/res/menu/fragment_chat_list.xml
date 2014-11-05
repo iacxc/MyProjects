@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".RoomListActivity">
-    <item android:id="@+id/new_chat"
+    <item android:id="@+id/menu_item_new_chat"
           android:title="@string/new_chat"
           android:icon="@android:drawable/ic_menu_add"
           app:showAsAction="ifRoom" />

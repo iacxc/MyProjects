@@ -4,16 +4,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
-/**
- * Created by caiche on 2014/11/2.
- */
 public class Chat {
 
-    private UUID mId;
+    private final UUID mId;
     private String mName;
     private Date mDate;
     private String mLastMessageText;
-    private ArrayList<User> mUserList;
+    private final ArrayList<User> mUserList;
 
     public Chat(User owner)
     {
@@ -25,15 +22,15 @@ public class Chat {
     }
 
 
-    public UUID getId() {        return mId;    }
+    public UUID getId() { return mId;    }
 
-    public String getName() {        return mName;    }
+    public String getName() { return mName;    }
 
-    public void setName(String name) {        mName = name;    }
+    public void setName(String name) { mName = name;    }
 
-    public Date getDate() {        return mDate;    }
+    public Date getDate() { return mDate;    }
 
-    public void setDate(Date date) {        mDate = date;    }
+    public void setDate(Date date) { mDate = date;    }
 
     public String getLastMessageText() { return mLastMessageText;    }
 
@@ -45,7 +42,7 @@ public class Chat {
 
     public ArrayList<User> getUserList() {  return mUserList;   }
 
-    public void addUser(User user) {   mUserList.add(user);  }
+    public void addUser(User user) { mUserList.add(user);  }
 
     public String toString() { return mName; }
 }

@@ -2,7 +2,6 @@ package com.caichengxin.chatroom;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,9 +15,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.UUID;
 
-/**
- * Created by caiche on 2014/11/2.
- */
+
 public class ChatFragment extends Fragment {
     public static final String TAG = "chatroom.ChatFragment";
 
@@ -27,8 +24,6 @@ public class ChatFragment extends Fragment {
     private Chat mChat;
     private ArrayList<Message> mChatMessages;
 
-    private ListView mLvChatMessages;
-    private Button mButtonSend;
     private EditText mEditMessage;
 
     public static ChatFragment newInstance(UUID chatId)
@@ -45,18 +40,20 @@ public class ChatFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+//        setHasOptionsMenu(true);
 
         UUID chatId = (UUID)getArguments().getSerializable(EXTRA_ID);
-        mChat = ChatLab.get(getActivity()).getChat(chatId);
+        mChat = ChatLab.get().getChat(chatId);
+
+        MessageLab msgLab = MessageLab.get();
 
         if (mChat != null) {
             getActivity().setTitle(mChat.getName());
 
-            MessageLab.get(getActivity()).init(mChat);
+            msgLab.init(mChat);
         }
 
-        mChatMessages =  MessageLab.get(getActivity()).getChatMessageList();
+        mChatMessages =  msgLab.getChatMessageList();
 
     }
 
@@ -68,19 +65,17 @@ public class ChatFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_chat_detail,
                 container, false);
 
-        ActionBar actionBar = getActivity().getActionBar();
-        if (actionBar != null)
-            actionBar.setDisplayHomeAsUpEnabled(true);
+        //ActionBarActivity activity = (ActionBarActivity)getActivity();
+        //activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        final MessageAdapter adapter = new MessageAdapter(mChatMessages);
 
-        final  MessageAdapter adapter = new MessageAdapter(mChatMessages);
-
-        mLvChatMessages = (ListView)view.findViewById(R.id.list_message);
-        mLvChatMessages.setAdapter(adapter);
+        ListView lvChatMessages = (ListView)view.findViewById(R.id.list_message);
+        lvChatMessages.setAdapter(adapter);
 
         mEditMessage = (EditText)view.findViewById(R.id.edit_message);
-        mButtonSend = (Button)view.findViewById(R.id.button_send);
-        mButtonSend.setOnClickListener(new View.OnClickListener() {
+        Button buttonSend = (Button)view.findViewById(R.id.button_send);
+        buttonSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -95,6 +90,7 @@ public class ChatFragment extends Fragment {
             }
         });
 
+        mEditMessage.requestFocus();
         return view;
     }
 

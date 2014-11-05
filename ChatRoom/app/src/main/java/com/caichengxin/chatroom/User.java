@@ -1,12 +1,10 @@
 package com.caichengxin.chatroom;
 
-/**
- * Created by caiche on 2014/11/3.
- */
+
 public class User
 {
-    private int mId;
-    private String mName;
+    private final int mId;
+    private final String mName;
 
     public User(int id, String name)
     {

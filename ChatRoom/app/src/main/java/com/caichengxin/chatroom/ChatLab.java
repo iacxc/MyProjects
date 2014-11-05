@@ -1,14 +1,11 @@
 package com.caichengxin.chatroom;
 
-import android.content.Context;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.UUID;
 
-/**
- * Created by caiche on 2014/11/2.
- */
+
 public class ChatLab
 {
     private static final String TAG = "chatroom.ChatLab";
@@ -16,7 +13,6 @@ public class ChatLab
     private ArrayList<Chat> mChats;
 
     private static ChatLab sChatLab;
-    private Context mAppContext;
 
     private void create()
     {
@@ -46,16 +42,13 @@ public class ChatLab
     }
 
 
-    private ChatLab(Context appContext) {
-        mAppContext = appContext;
-
+    private ChatLab() {
         create();
-
     }
 
-    public static ChatLab get(Context c) {
+    public static ChatLab get() {
         if (sChatLab == null) {
-            sChatLab = new ChatLab(c.getApplicationContext());
+            sChatLab = new ChatLab();
         }
         return sChatLab;
     }
@@ -70,5 +63,13 @@ public class ChatLab
 
     public ArrayList<Chat> getChats() {
         return mChats;
+    }
+
+    public void addChat(Chat chat) {
+        mChats.add(chat);
+    }
+
+    public void deleteChat(Chat chat) {
+        mChats.remove(chat);
     }
 }

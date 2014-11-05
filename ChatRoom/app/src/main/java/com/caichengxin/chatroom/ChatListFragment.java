@@ -3,7 +3,7 @@ package com.caichengxin.chatroom;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,14 +17,12 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-/**
- * Created by caiche on 2014/11/2.
- */
+
 public class ChatListFragment extends Fragment
 {
     private static final String TAG = "chatroom.ChatListFragment";
 
-    private ListView mLvChatRooms;
+    private ListView mLvChats;
     private ArrayList<Chat> mChats;
 
 
@@ -38,12 +36,15 @@ public class ChatListFragment extends Fragment
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
 
         setHasOptionsMenu(true);
 
         getActivity().setTitle(R.string.chatroom_title);
-        mChats = ChatLab.get(getActivity()).getChats();
+        mChats = ChatLab.get().getChats();
+
+        setRetainInstance(true);
     }
 
 
@@ -55,10 +56,10 @@ public class ChatListFragment extends Fragment
                 container, false);
 
         ChatListAdapter adapter = new ChatListAdapter(mChats);
-        mLvChatRooms = (ListView)view.findViewById(R.id.list_chat);
-        mLvChatRooms.setAdapter(adapter);
+        mLvChats = (ListView)view.findViewById(R.id.list_chat);
+        mLvChats.setAdapter(adapter);
 
-        mLvChatRooms.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mLvChats.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
@@ -68,6 +69,7 @@ public class ChatListFragment extends Fragment
             }
         });
 
+        registerForContextMenu(mLvChats);
         return view;
     }
 
@@ -76,13 +78,14 @@ public class ChatListFragment extends Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
     {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.room_op, menu);
+        inflater.inflate(R.menu.fragment_chat_list, menu);
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.new_chat:
+            case R.id.menu_item_new_chat:
                 Toast.makeText(getActivity(),
                         R.string.new_chat, Toast.LENGTH_LONG).show();
 
@@ -92,9 +95,9 @@ public class ChatListFragment extends Fragment
                 chat.addUser(user);
                 chat.setName(user.getName());
 
-                mChats.add(chat);
+                ChatLab.get().addChat(chat);
 
-                ((ChatListAdapter)mLvChatRooms.getAdapter())
+                ((ChatListAdapter)mLvChats.getAdapter())
                         .notifyDataSetChanged();
 
                 startChat(chat);
@@ -107,6 +110,31 @@ public class ChatListFragment extends Fragment
         }
     }
 
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+                                    ContextMenu.ContextMenuInfo menuInfo)
+    {
+        getActivity().getMenuInflater()
+                .inflate(R.menu.chat_list_item_context, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info =
+                (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+        ChatListAdapter adapter = (ChatListAdapter)mLvChats.getAdapter();
+        Chat chat = adapter.getItem(info.position);
+
+        switch (item.getItemId()) {
+            case R.id.menu_item_delete_chat:
+                ChatLab.get().deleteChat(chat);
+                adapter.notifyDataSetChanged();
+
+                return true;
+
+        }
+        return super.onContextItemSelected(item);
+    }
     private class ChatListAdapter extends ArrayAdapter<Chat>
     {
 

@@ -3,37 +3,18 @@ package com.caichengxin.chatroom;
 import java.util.Date;
 import java.util.UUID;
 
-/**
- * Created by caiche on 2014/11/2.
- */
+
 public class Message
 {
-    private UUID mChatId;
-    private String mText;
-    private User mSender;
+    private final UUID mChatId;
+    private final String mText;
+    private final User mSender;
     private String mSenderImage;
-    private Date mDate;
+    private final Date mDate;
 
-<<<<<<< HEAD
-    public Message() {
-        mId = UUID.randomUUID();
-        mDate = new Date();
-    }
-
-    public UUID getId() {
-        return mId;
-    }
-
-    public String getText() {
-        return mText;
-    }
-
-    public void setText(String text) {
-=======
     public Message(UUID chatId, User sender, String text) {
         mChatId = chatId;
         mSender = sender;
->>>>>>> 57285199702514457dcd98444512b32c4b8003e5
         mText = text;
         mDate = new Date();
     }

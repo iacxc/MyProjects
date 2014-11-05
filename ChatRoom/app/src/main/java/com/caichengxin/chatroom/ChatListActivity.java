@@ -11,4 +11,5 @@ public class ChatListActivity extends SingleFragmentActivity
     protected Fragment createFragment() {
         return new ChatListFragment();
     }
+
 }

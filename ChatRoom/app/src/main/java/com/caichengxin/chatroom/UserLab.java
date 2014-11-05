@@ -2,9 +2,7 @@ package com.caichengxin.chatroom;
 
 import java.util.ArrayList;
 
-/**
- * Created by caiche on 2014/11/4.
- */
+
 public class UserLab {
     private static final String[] sNames =
             new String[]{"CaiChengxin",

@@ -4,11 +4,8 @@ import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
-import android.widget.FrameLayout;
 
-/**
- * Created by caiche on 2014/11/2.
- */
+
 public abstract class SingleFragmentActivity extends ActionBarActivity
 {
     protected abstract Fragment createFragment();
@@ -17,9 +14,7 @@ public abstract class SingleFragmentActivity extends ActionBarActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        FrameLayout fl = new FrameLayout(this);
-        fl.setId(R.id.fragmentContainer);
-        setContentView(fl);
+        setContentView(R.layout.activity_fragment);
 
         FragmentManager fm = getSupportFragmentManager();
         Fragment fragment = fm.findFragmentById(R.id.fragmentContainer);
