@@ -2,19 +2,22 @@ package com.caichengxin.chatroom;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 
 
-public abstract class SingleFragmentActivity extends ActionBarActivity
-{
-    protected abstract Fragment createFragment();
+public class MainActivity extends ActionBarActivity {
+
+    protected Fragment createFragment() {
+        return new ChatListFragment();
+    }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_fragment);
+        setContentView(R.layout.activity_main);
 
         FragmentManager fm = getFragmentManager();
         Fragment fragment = fm.findFragmentById(R.id.fragmentContainer);
@@ -26,4 +29,5 @@ public abstract class SingleFragmentActivity extends ActionBarActivity
                     .commit();
         }
     }
+
 }
