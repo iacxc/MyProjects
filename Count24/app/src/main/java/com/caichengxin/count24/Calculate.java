@@ -20,11 +20,7 @@ public class Calculate {
         public String expStr="";
         public String[] strs;
         public Data(){}
-        public Data(int a,int b,int c,int d) {
-            arr=new float[]{a,b,c,d};
-            strs=new String[]{a+"",b+"",c+"",d+""};
-            expStr=a+"";
-        }
+
         public Data(int arr[]) {
             this.arr=new float[]{arr[0],arr[1],arr[2],arr[3]};
             this.strs=new String[]{arr[0]+"",arr[1]+"",arr[2]+"",arr[3]+""};
@@ -104,7 +100,7 @@ public class Calculate {
         return newData;
     }
 
-    public static final List<String> easyCount(int[] curRandNums)
+    public static List<String> easyCount(int[] curRandNums)
     {
         Calculate cal=new Calculate();
         cal.count(new Data(curRandNums));

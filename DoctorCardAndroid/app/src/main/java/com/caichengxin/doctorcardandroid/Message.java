@@ -9,16 +9,13 @@ import java.util.UUID;
 public class Message
 {
     private long mId;
-    private Byte[]  mMediaContent;
+    private String  mMediaText;
     private String mMediaType;
-    private String mMediaIconUrl;
-    private Point mLocation;
-    private long mAuthorId;
-    Date mCreateDate;
+    private User mAuthor;
 
-    public Message(long id) {
+    public Message(long id, User author) {
         mId = id;
-        mCreateDate = new Date();
+        mAuthor = author;
     }
 
     public long getId() {
@@ -29,12 +26,12 @@ public class Message
         mId = id;
     }
 
-    public Byte[] getMediaContent() {
-        return mMediaContent;
+    public String getMediaText() {
+        return mMediaText;
     }
 
-    public void setMediaContent(Byte[] mediaContent) {
-        mMediaContent = mediaContent;
+    public void setMediaText(String mediaText) {
+        mMediaText = mediaText;
     }
 
     public String getMediaType() {
@@ -45,41 +42,10 @@ public class Message
         mMediaType = mediaType;
     }
 
-    public String getMediaIconUrl() {
-        return mMediaIconUrl;
-    }
-
-    public void setMediaIconUrl(String iconUrl) {
-        mMediaIconUrl = iconUrl;
-    }
-
-    public Point getLocation() {
-        return mLocation;
-    }
-
-    public void setLocation(Point location) {
-        mLocation = location;
-    }
-
-    public long getAuthorId() {
-        return mAuthorId;
-    }
-
-    public void setAuthorId(long authorId) {
-        mAuthorId = authorId;
-    }
-
-    public Date getCreateDate() {
-        return mCreateDate;
-    }
-
-    public void setCreateDate(Date createDate) {
-        mCreateDate = createDate;
-    }
 
     public String toString() {
         if (mMediaType.equals("text"))
-            return mMediaContent;
+            return mMediaText;
         else
             return "<" + mMediaType + ">";
     }

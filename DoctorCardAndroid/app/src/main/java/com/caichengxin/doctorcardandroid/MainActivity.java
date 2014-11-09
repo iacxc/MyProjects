@@ -2,8 +2,8 @@ package com.caichengxin.doctorcardandroid;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -11,11 +11,15 @@ import android.view.MenuItem;
 public class MainActivity extends Activity
         implements IndexFragment.OnIndexPressedListener
 {
+    private static final String TAG = "doctorcardandroid.MainActivity";
 
-    private ChatListFragment mFragmentChatlist;
-    private FriendFragment mFragmentFriend;
-    private DiscoverFragment mFragmentDiscover;
-    private Myselfragment mFragmentMyself;
+    //this should be the user who just login, but now just a faked one
+    public static final User ME = UserLab.get().findUserById(0);
+
+    private ChatListFragment mFragmentChatlist = null;
+    private FriendFragment mFragmentFriend = null;
+    private DiscoverFragment mFragmentDiscover = null;
+    private MyselFragment mFragmentMyself = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,11 +28,6 @@ public class MainActivity extends Activity
 
         if (savedInstanceState != null)
             return;
-
-        mFragmentChatlist = new ChatListFragment();
-        mFragmentFriend = new FriendFragment();
-        mFragmentDiscover = new DiscoverFragment();
-        mFragmentMyself = new Myselfragment();
 
         onChatButtonPressed();
 
@@ -51,6 +50,7 @@ public class MainActivity extends Activity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Log.i(TAG, "action settings menu item clicked");
             return true;
         }
 
@@ -65,20 +65,32 @@ public class MainActivity extends Activity
 
     public void onChatButtonPressed()
     {
+        if (mFragmentChatlist == null)
+            mFragmentChatlist = new ChatListFragment();
+
         showFragment( mFragmentChatlist );
     }
 
     public void onFriendButtonPressed()
     {
+        if (mFragmentFriend == null)
+            mFragmentFriend = new FriendFragment();
+
         showFragment( mFragmentFriend);
     }
 
     public void onDiscoverButtonPressed()
     {
+        if (mFragmentDiscover == null)
+            mFragmentDiscover = new DiscoverFragment();
+
         showFragment( mFragmentDiscover );
     }
     public void onMyselfButtonPressed()
     {
+        if (mFragmentMyself == null)
+            mFragmentMyself = new MyselFragment();
+
         showFragment( mFragmentMyself );
     }
 }

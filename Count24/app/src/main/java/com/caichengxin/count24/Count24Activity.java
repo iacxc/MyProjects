@@ -10,8 +10,8 @@ import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -19,7 +19,6 @@ import java.util.List;
 public class Count24Activity extends ActionBarActivity {
 
     private Date mStartDate;
-    private Button mButtonGenerate, mButtonGetAnswer;
     private TextView mTextAnswer;
     private EditText[] mEditNumbers;
 
@@ -40,8 +39,8 @@ public class Count24Activity extends ActionBarActivity {
                 (EditText)numberRow.getChildAt(3)};
 
         mTextAnswer = (TextView)findViewById(R.id.text_answer);
-        mButtonGenerate = (Button)findViewById(R.id.button_generate);
-        mButtonGenerate.setOnClickListener(new View.OnClickListener() {
+        Button buttonGenerate = (Button)findViewById(R.id.button_generate);
+        buttonGenerate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 for(int i=0; i<4; i++) {
@@ -49,13 +48,13 @@ public class Count24Activity extends ActionBarActivity {
                             String.valueOf((int)(Math.random()*10) + 1));
                 }
                 mStartDate = new Date();
-
+                mTextAnswer.setText("");
 
             }
         });
 
-        mButtonGetAnswer = (Button)findViewById(R.id.button_answer);
-        mButtonGetAnswer.setOnClickListener(new View.OnClickListener() {
+        Button buttonGetAnswer = (Button)findViewById(R.id.button_answer);
+        buttonGetAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 List<String> resultList = Calculate.easyCount(
@@ -72,7 +71,9 @@ public class Count24Activity extends ActionBarActivity {
                             now.getTime() - mStartDate.getTime()));
                 }
                 else {
-                    mTextAnswer.setText(R.string.no_answer);
+                    Toast.makeText(Count24Activity.this, R.string.no_answer,
+                            Toast.LENGTH_SHORT).show();
+                    mTextAnswer.setText("");
                 }
             }
         });
