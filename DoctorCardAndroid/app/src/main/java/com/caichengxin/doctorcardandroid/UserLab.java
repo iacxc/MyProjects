@@ -40,6 +40,8 @@ public class UserLab {
     }
 
     public User findUserById(long userId) {
+        Log.d(TAG, "searching user #" + userId);
+
         for (User user : mUserList) {
             if (user.getId() == userId)
                 return user;
@@ -56,5 +58,11 @@ public class UserLab {
         }
 
         return null;
+    }
+
+    public User getRandomUser() {
+        int index = (int)(Math.random() * sUsers.length);
+
+        return sUsers[index];
     }
 }

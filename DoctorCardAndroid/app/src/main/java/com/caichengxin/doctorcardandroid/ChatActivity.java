@@ -7,9 +7,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.ConsoleMessage;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -42,7 +46,9 @@ public class ChatActivity extends Activity {
         mMessageList = new ArrayList<Message>();
         loadMessages(chat);
 
+        MessageAdapter adapter = new MessageAdapter(mMessageList);
         mLvMessages = (ListView)findViewById(R.id.list_message);
+        mLvMessages.setAdapter(adapter);
 
         mEditMessage = (EditText)findViewById(R.id.edit_message);
 
@@ -50,6 +56,9 @@ public class ChatActivity extends Activity {
         mButtonSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String txtMessage = mEditMessage.getText().toString();
+
+                Log.d(TAG, "Sending " + txtMessage);
                 mEditMessage.setText("");
             }
         });
@@ -79,6 +88,43 @@ public class ChatActivity extends Activity {
     }
 
     private void loadMessages(Chat chat) {
+        long id = chat.getId();
+
+        //get all message for the chat id
+        //for debug purpose, generate some random message
+        for(int i=0; i < 30; i++) {
+            Message msg = new Message(i, UserLab.get().getRandomUser());
+            msg.setMediaText("Message #" + i);
+            if ((int)(Math.random() * 2) == 1)
+                msg.setMediaType("text");
+            else
+                msg.setMediaType("movie");
+
+            mMessageList.add(msg);
+        }
+    }
+
+    private class MessageAdapter extends ArrayAdapter<Message>
+    {
+        public MessageAdapter(ArrayList<Message> messages) {
+            super(ChatActivity.this, 0, messages);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+            if (convertView == null)
+                convertView = getLayoutInflater().inflate(
+                        R.layout.list_item_message, null);
+
+            Message msg = getItem(position);
+
+            TextView textMessage =
+                    (TextView)convertView.findViewById(R.id.text_message);
+            textMessage.setText(msg.toString());
+
+            return convertView;
+        }
 
     }
 }

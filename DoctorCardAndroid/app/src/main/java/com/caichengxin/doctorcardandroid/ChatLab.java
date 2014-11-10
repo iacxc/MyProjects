@@ -42,6 +42,10 @@ public class ChatLab {
         return mChatList;
     }
 
+    public void addChat(Chat chat) {
+        mChatList.add(0, chat);
+    }
+
     public Chat findChatById(long chatId) {
         for (Chat chat : mChatList) {
             if (chat.getId() == chatId)

@@ -47,13 +47,12 @@ public class ChatListFragment extends Fragment {
 
         mLvChats = (ListView)view.findViewById(R.id.list_chats);
 
-        ArrayAdapter<Chat> adapter = new ArrayAdapter<Chat>(getActivity(),
-                android.R.layout.simple_list_item_1, mChatList);
-        mLvChats.setAdapter(adapter);
+        final ChatAdapter chatAadapter = new ChatAdapter(mChatList);
+        mLvChats.setAdapter(chatAadapter);
         mLvChats.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Chat chat = (Chat)mLvChats.getAdapter().getItem(position);
+                Chat chat = chatAadapter.getItem(position);
 
                 startChat(chat);
             }
@@ -75,6 +74,14 @@ public class ChatListFragment extends Fragment {
             case R.id.menu_add:
                 Toast.makeText(getActivity(),
                         R.string.menu_item_add_chat, Toast.LENGTH_LONG).show();
+                Chat chat = new Chat((int)(Math.random() * 1000));
+                chat.setName(UserLab.get().getRandomUser().getName());
+
+                ChatLab.get().addChat(chat);
+
+                ((ChatAdapter)mLvChats.getAdapter()).notifyDataSetChanged();
+
+                startChat(chat);
                 return true;
 
             case R.id.action_settings:
@@ -92,5 +99,12 @@ public class ChatListFragment extends Fragment {
         i.putExtra(ChatActivity.EXTRA_ID, chat.getId());
 
         startActivity(i);
+    }
+
+    private class ChatAdapter extends ArrayAdapter<Chat>
+    {
+        public ChatAdapter(ArrayList<Chat> chats) {
+            super(getActivity(), android.R.layout.simple_list_item_1, chats);
+        }
     }
 }

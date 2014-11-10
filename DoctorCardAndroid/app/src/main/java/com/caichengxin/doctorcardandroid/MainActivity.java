@@ -19,7 +19,7 @@ public class MainActivity extends Activity
     private ChatListFragment mFragmentChatlist = null;
     private FriendFragment mFragmentFriend = null;
     private DiscoverFragment mFragmentDiscover = null;
-    private MyselFragment mFragmentMyself = null;
+    private MyFragment mFragmentMy = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,9 +88,9 @@ public class MainActivity extends Activity
     }
     public void onMyselfButtonPressed()
     {
-        if (mFragmentMyself == null)
-            mFragmentMyself = new MyselFragment();
+        if (mFragmentMy == null)
+            mFragmentMy = new MyFragment();
 
-        showFragment( mFragmentMyself );
+        showFragment( mFragmentMy );
     }
 }

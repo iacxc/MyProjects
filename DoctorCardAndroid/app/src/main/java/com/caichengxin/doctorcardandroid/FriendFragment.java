@@ -16,7 +16,6 @@ public class FriendFragment extends Fragment {
 
     private static final String TAG = "doctorcardandroid.FriendFragment";
 
-
     private ArrayList<User> mFriends;
     private ListView mLvFriends;
 
@@ -25,8 +24,6 @@ public class FriendFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         setRetainInstance(true);
-
-        mFriends = new ArrayList<User>();
 
         loadFriends(MainActivity.ME);
 
@@ -48,17 +45,16 @@ public class FriendFragment extends Fragment {
     }
 
     private void loadFriends(User myself) {
-        //use rest call to get all of my friends
-        //currently, only insert some faked people
         if (mFriends != null)
             return;
 
+        //use rest call to get all of my friends
+        //currently, only insert some faked people
         Log.d(TAG, "loading friends...");
 
-        mFriends.clear();
+        mFriends = new ArrayList<User>();
 
         //use rest api to get the user id of all my friends
-
         //for debug purpose
         UserLab userLab = UserLab.get();
         mFriends.add(userLab.findUserById(10));
