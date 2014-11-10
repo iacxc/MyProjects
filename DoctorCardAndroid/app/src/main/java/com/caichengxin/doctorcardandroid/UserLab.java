@@ -12,13 +12,13 @@ public class UserLab {
 
     //for debug purpose
     private static final User[] sUsers = new User[]{
-            new User(0, "CaiChengxin"),
-            new User(10, "WangHailong"),
-            new User(11, "ZhuYadong"),
-            new User(12, "NiJun"),
-            new User(100, "User1"),
-            new User(101, "User2"),
-            new User(102, "User3")};
+            new User(0, "cxcai", "CaiChengxin"),
+            new User(10, "wlh", "WangHailong"),
+            new User(11, "zhu", "ZhuYadong"),
+            new User(12, "nj", "NiJun"),
+            new User(100, "user1"),
+            new User(101, "user2"),
+            new User(102, "user3")};
 
     private static UserLab sUserLab;
     private ArrayList<User> mUserList;
@@ -51,8 +51,31 @@ public class UserLab {
         boolean found = false;
         if (found) {
             long foundId = 1000;
-            String foundName = "New user";
+            String foundName = "nuser";
             User user = new User(foundId, foundName);
+            user.setDisplayName("New User");
+            mUserList.add(user);
+            return user;
+        }
+
+        return null;
+    }
+
+    public User findUserByName(String name) {
+        Log.d(TAG, "searching user :" + name);
+
+        for (User user : mUserList) {
+            if (user.getName() == name)
+                return user;
+        }
+
+        //use rest api to search the user
+        boolean found = false;
+        if (found) {
+            long foundId = 1000;
+            String foundName = "nuser";
+            User user = new User(foundId, foundName);
+            user.setDisplayName("New User");
             mUserList.add(user);
             return user;
         }

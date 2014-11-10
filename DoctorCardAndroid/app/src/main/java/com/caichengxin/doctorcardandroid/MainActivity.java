@@ -14,12 +14,12 @@ public class MainActivity extends Activity
     private static final String TAG = "doctorcardandroid.MainActivity";
 
     //this should be the user who just login, but now just a faked one
-    public static final User ME = UserLab.get().findUserById(0);
+    public static final User ME = UserLab.get().findUserByName("cxcai");
 
     private ChatListFragment mFragmentChatlist = null;
     private FriendFragment mFragmentFriend = null;
     private DiscoverFragment mFragmentDiscover = null;
-    private MyFragment mFragmentMy = null;
+    private MyFragment mFragmentMyself = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,9 +88,9 @@ public class MainActivity extends Activity
     }
     public void onMyselfButtonPressed()
     {
-        if (mFragmentMy == null)
-            mFragmentMy = new MyFragment();
+        if (mFragmentMyself == null)
+            mFragmentMyself = new MyFragment();
 
-        showFragment( mFragmentMy );
+        showFragment( mFragmentMyself );
     }
 }
