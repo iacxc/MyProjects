@@ -15,9 +15,25 @@ import java.util.ArrayList;
 public class FriendFragment extends Fragment {
 
     private static final String TAG = "doctorcardandroid.FriendFragment";
+    public static final String EXTRA_OWNER_ID =
+            "doctorcardandroid.FriendFragment.owner_id";
+
+    private User mOwner;
 
     private ArrayList<User> mFriends;
     private ListView mLvFriends;
+
+    public static FriendFragment newInstance(User owner) {
+
+        Bundle args = new Bundle();
+        args.putLong(EXTRA_OWNER_ID, owner.getId());
+
+        FriendFragment fragment = new FriendFragment();
+        fragment.setArguments(args);
+
+        return fragment;
+    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -25,8 +41,18 @@ public class FriendFragment extends Fragment {
         setHasOptionsMenu(true);
         setRetainInstance(true);
 
-        loadFriends(MainActivity.ME);
+        if (mOwner == null) {
+            long userId = getArguments().getLong(EXTRA_OWNER_ID, -1);
+            mOwner = UserLab.get().findUserById(userId);
+        }
 
+        if (mOwner != null) {
+            String title = getResources().getString(R.string.friend_title);
+            getActivity().setTitle(title + "(" + mOwner.toString() + ")");
+
+            if (mFriends == null)
+                mFriends = loadFriends(mOwner);
+        }
     }
 
     @Override
@@ -44,22 +70,21 @@ public class FriendFragment extends Fragment {
         return view;
     }
 
-    private void loadFriends(User myself) {
-        if (mFriends != null)
-            return;
-
+    private ArrayList<User> loadFriends(User myself) {
         //use rest call to get all of my friends
         //currently, only insert some faked people
         Log.d(TAG, "loading friends...");
 
-        mFriends = new ArrayList<User>();
+        ArrayList<User> friends = new ArrayList<User>();
 
         //use rest api to get the user id of all my friends
         //for debug purpose
         UserLab userLab = UserLab.get();
-        mFriends.add(userLab.findUserById(10));
-        mFriends.add(userLab.findUserById(11));
-        mFriends.add(userLab.findUserById(12));
+        friends.add(userLab.findUserById(10));
+        friends.add(userLab.findUserById(11));
+        friends.add(userLab.findUserById(12));
+
+        return friends;
     }
 
 }

@@ -22,9 +22,26 @@ import java.util.ArrayList;
 public class ChatListFragment extends Fragment {
 
     private static final String TAG = "doctorcardandroid.ChatListFragment";
+    public static final String EXTRA_OWNER_ID =
+            "doctorcardandroid.ChatListFragment.owner_id";
+
+    private User mOwner;
 
     private ArrayList<Chat> mChatList;
     private ListView mLvChats;
+
+
+    public static ChatListFragment newInstance(User owner) {
+
+        Bundle args = new Bundle();
+        args.putLong(EXTRA_OWNER_ID, owner.getId());
+
+        ChatListFragment fragment = new ChatListFragment();
+        fragment.setArguments(args);
+
+        return fragment;
+    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -32,11 +49,17 @@ public class ChatListFragment extends Fragment {
         setHasOptionsMenu(true);
         setRetainInstance(true);
 
-        if (savedInstanceState == null)
-            ChatLab.get().loadChatList(MainActivity.ME);
+        if (mOwner == null) {
+            long userId = getArguments().getLong(EXTRA_OWNER_ID, -1);
+            mOwner = UserLab.get().findUserById(userId);
+        }
 
-        mChatList = ChatLab.get().getChatList();
-
+        if (mOwner != null) {
+            String title = getResources().getString(R.string.chat_title);
+            getActivity().setTitle(title + "(" + mOwner.toString() + ")");
+            ChatLab.get().loadChatList(mOwner);
+            mChatList = ChatLab.get().getChatList();
+        }
     }
 
     @Override
@@ -71,9 +94,9 @@ public class ChatListFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_add:
+            case R.id.menu_item_add_chat:
                 Toast.makeText(getActivity(),
-                        R.string.menu_item_add_chat, Toast.LENGTH_LONG).show();
+                        R.string.menu_add_chat, Toast.LENGTH_LONG).show();
                 Chat chat = new Chat((int)(Math.random() * 1000));
                 chat.setName(UserLab.get().getRandomUser().getName());
 

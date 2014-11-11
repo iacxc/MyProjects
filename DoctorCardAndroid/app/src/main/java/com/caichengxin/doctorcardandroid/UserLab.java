@@ -65,7 +65,7 @@ public class UserLab {
         Log.d(TAG, "searching user :" + name);
 
         for (User user : mUserList) {
-            if (user.getName() == name)
+            if (name.equals(user.getName()))
                 return user;
         }
 
@@ -82,6 +82,7 @@ public class UserLab {
 
         return null;
     }
+
 
     public User getRandomUser() {
         int index = (int)(Math.random() * sUsers.length);

@@ -10,6 +10,15 @@ import android.view.ViewGroup;
 
 public class DiscoverFragment extends Fragment {
 
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        getActivity().setTitle(R.string.discover_title);
+    }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
