@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">24点游戏</string>
+    <string name="new_game">新游戏</string>
+    <string name="action_settings">设置</string>
+    <string name="label_or">或者</string>
+    <string name="label_deal">发牌</string>
+    <string name="label_input">手工输入</string>
+    <string name="label_answer">显示答案</string>
+    <string name="no_answer">无解</string>
+    <string name="format_answer">%1$s =24; 耗时 %2$d 毫秒</string>
+
+
+</resources>
