@@ -35,19 +35,34 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <TableLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
+        <TableRow >
+            <ImageView style="@style/image_card"
+                       android:layout_height="50dp"
+                       android:src="@android:drawable/ic_input_add"/>
+            <ImageView style="@style/image_card"
+                       android:layout_height="50dp"
+                       android:src="@android:drawable/ic_input_delete"/>
+            <ImageView style="@style/image_card"
+                       android:layout_height="50dp"
+                       />
+            <ImageView style="@style/image_card"
+                       android:layout_height="50dp"
+                       android:src="@android:drawable/ic_input_add"/>
+        </TableRow>
+        <TableRow>
         <ImageView style="@style/image_card"
-                   android:id="@+id/image1"/>
+                   android:id="@+id/image1" />
         <ImageView style="@style/image_card"
                    android:id="@+id/image2"/>
         <ImageView style="@style/image_card"
                    android:id="@+id/image3"/>
         <ImageView style="@style/image_card"
                    android:id="@+id/image4"/>
-    </LinearLayout>
+        </TableRow>
+    </TableLayout>
 
     <LinearLayout android:id="@+id/layout_numbers"
         android:layout_width="match_parent"

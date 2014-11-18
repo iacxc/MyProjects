@@ -29,16 +29,19 @@ import java.util.List;
 public class Count24Activity extends ActionBarActivity {
 
     private Date mStartDate;
-    private int[] mDrawables = new int[]{R.drawable.c1,
-            R.drawable.c2,
-            R.drawable.c3,
-            R.drawable.c4,
-            R.drawable.c5,
-            R.drawable.c6,
-            R.drawable.c7,
-            R.drawable.c8,
-            R.drawable.c9,
-            R.drawable.c10 };
+    private int[][] mDrawables = new int[][]{
+        {R.drawable.c1_c, R.drawable.c1_d, R.drawable.c1_h, R.drawable.c1_s},
+        {R.drawable.c2_c, R.drawable.c2_d, R.drawable.c2_h, R.drawable.c2_s},
+        {R.drawable.c3_c, R.drawable.c3_d, R.drawable.c3_h, R.drawable.c3_s},
+        {R.drawable.c4_c, R.drawable.c4_d, R.drawable.c4_h, R.drawable.c4_s},
+        {R.drawable.c5_c, R.drawable.c5_d, R.drawable.c5_h, R.drawable.c5_s},
+        {R.drawable.c6_c, R.drawable.c6_d, R.drawable.c6_h, R.drawable.c6_s},
+        {R.drawable.c7_c, R.drawable.c7_d, R.drawable.c7_h, R.drawable.c7_s},
+        {R.drawable.c8_c, R.drawable.c8_d, R.drawable.c8_h, R.drawable.c8_s},
+        {R.drawable.c9_c, R.drawable.c9_d, R.drawable.c9_h, R.drawable.c9_s},
+        {R.drawable.c10_c, R.drawable.c10_d,
+                R.drawable.c10_h, R.drawable.c10_s},
+    };
 
     private ImageView[]  mImages;
     private EditText[] mEditNumbers;
@@ -46,15 +49,17 @@ public class Count24Activity extends ActionBarActivity {
     private LinearLayout mLayoutNumbers;
 
 
+    private int pickCardId(int n) {
+        int index = (int)(Math.random() * 3);
+        return mDrawables[n-1][index];
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_count24);
 
         mLayoutNumbers = (LinearLayout)findViewById(R.id.layout_numbers);
-//        ViewGroup.LayoutParams linearParams = mLayoutNumbers.getLayoutParams();
-//        linearParams.height = 0;
-//        mLayoutNumbers.setLayoutParams(linearParams);
         mLayoutNumbers.setVisibility(View.INVISIBLE);
 
         final ImageView image1 = (ImageView)findViewById(R.id.image1);
@@ -71,22 +76,27 @@ public class Count24Activity extends ActionBarActivity {
 
         text1.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) { }
 
+            @Override
+            public void onTextChanged(CharSequence s,
+                                      int start, int before, int count) {
+                try {
+                    int number = Integer.valueOf(s.toString());
+                    if (number > 0 && number <= 10)
+                        image1.setImageResource(pickCardId(number));
+                }
+                catch (Exception e) {}
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                int index = Integer.valueOf(s.toString());
-                if (index > 0 && index <= 10)
-                    image1.setImageResource(mDrawables[index-1]);
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
+            public void afterTextChanged(Editable s) { }
         });
+
+        text2.addTextChangedListener(new CardTextWatcher(image2));
+        text3.addTextChangedListener(new CardTextWatcher(image3));
+        text4.addTextChangedListener(new CardTextWatcher(image4));
 
 
         mTextAnswer = (TextView)findViewById(R.id.text_answer);
@@ -110,11 +120,6 @@ public class Count24Activity extends ActionBarActivity {
         buttonInput.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                ViewGroup.LayoutParams linearParams =
-//                        mLayoutNumbers.getLayoutParams();
-//                linearParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-//                mLayoutNumbers.setLayoutParams(linearParams);
-
                 mLayoutNumbers.setVisibility(View.VISIBLE);
             }
         });
@@ -176,5 +181,27 @@ public class Count24Activity extends ActionBarActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private class CardTextWatcher implements TextWatcher {
+        ImageView mImage;
+        public CardTextWatcher(ImageView image) {
+            mImage = image;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s,
+                                      int start, int count, int after) { }
+
+        @Override
+        public void onTextChanged(CharSequence s,
+                                  int start, int before, int count) {
+            int number = Integer.valueOf(s.toString());
+            if (number > 0 && number <= 10)
+                mImage.setImageResource(pickCardId(number));
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {   }
     }
 }
