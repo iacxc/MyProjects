@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Stack;
 
 
 public class Count24Activity extends Activity {
@@ -38,14 +39,58 @@ public class Count24Activity extends Activity {
     private ImageView[] mImages;
     private EditText[] mEditNumbers;
     private TextView mTextAnswer, mTextInput;
-    private Button mButtonGetAnswer;
+    private Button mButtonDeal, mButtonInput, mButtonGetAnswer;
     private LinearLayout mLayoutNumbers;
 
+    private Stack<String> mStackOperators = new Stack<String>();
+    private boolean mStarted = false;
+
+    private boolean mAutomatic = true;
 
     private int pickCardId(int n) {
         int index = (int)(Math.random() * 3);
         return mDrawables[n-1][index];
     }
+
+
+    public void clearInput() {
+        mStartDate = new Date();
+        mTextInput.setText("");
+
+        mTextAnswer.setText("");
+
+        mButtonGetAnswer.setEnabled(true);
+
+        if (mAutomatic) {
+            mLayoutNumbers.setVisibility(View.INVISIBLE);
+            mTextInput.setVisibility(View.VISIBLE);
+            mButtonGetAnswer.setText(R.string.label_check_answer);
+        }
+        else {
+            mLayoutNumbers.setVisibility(View.VISIBLE);
+            mTextInput.setVisibility(View.INVISIBLE);
+            mButtonGetAnswer.setText(R.string.label_show_answer);
+        }
+
+        mButtonGetAnswer.setVisibility(mStarted ? View.VISIBLE : View.INVISIBLE);
+    }
+
+
+    private void updateInput() {
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (String item : mStackOperators)
+        {
+            if (first)
+                first = false;
+            else
+                sb.append(" ");
+            sb.append(item);
+        }
+
+        mTextInput.setText(sb.toString());
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,12 +98,14 @@ public class Count24Activity extends Activity {
         setContentView(R.layout.activity_count24);
 
         mLayoutNumbers = (LinearLayout)findViewById(R.id.layout_numbers);
-        mLayoutNumbers.setVisibility(View.INVISIBLE);
 
-        final ImageView image1 = (ImageView)findViewById(R.id.image1);
-        final ImageView image2 = (ImageView)findViewById(R.id.image2);
-        final ImageView image3 = (ImageView)findViewById(R.id.image3);
-        final ImageView image4 = (ImageView)findViewById(R.id.image4);
+        mTextInput = (TextView)findViewById(R.id.text_input);
+        mTextAnswer = (TextView)findViewById(R.id.text_answer);
+
+        ImageView image1 = (ImageView)findViewById(R.id.image1);
+        ImageView image2 = (ImageView)findViewById(R.id.image2);
+        ImageView image3 = (ImageView)findViewById(R.id.image3);
+        ImageView image4 = (ImageView)findViewById(R.id.image4);
         mImages = new ImageView [] {image1, image2, image3, image4};
 
         EditText text1 = (EditText)findViewById(R.id.text1);
@@ -67,38 +114,45 @@ public class Count24Activity extends Activity {
         EditText text4 = (EditText)findViewById(R.id.text4);
         mEditNumbers = new EditText[]{text1, text2, text3, text4};
 
-        text1.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start,
-                                          int count, int after) { }
-
-            @Override
-            public void onTextChanged(CharSequence s,
-                                      int start, int before, int count) {
-                try {
-                    int number = Integer.valueOf(s.toString());
-                    if (number > 0 && number <= 10)
-                        image1.setImageResource(pickCardId(number));
-                }
-                catch (Exception e) {}
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) { }
-        });
-
+        text1.addTextChangedListener(new CardTextWatcher(image1));
         text2.addTextChangedListener(new CardTextWatcher(image2));
         text3.addTextChangedListener(new CardTextWatcher(image3));
         text4.addTextChangedListener(new CardTextWatcher(image4));
 
-        mTextInput = (TextView)findViewById(R.id.text_input);
-        mTextAnswer = (TextView)findViewById(R.id.text_answer);
+        image1.setOnClickListener(new NumberOnClickListener(text1));
+        image2.setOnClickListener(new NumberOnClickListener(text2));
+        image3.setOnClickListener(new NumberOnClickListener(text3));
+        image4.setOnClickListener(new NumberOnClickListener(text4));
 
-        Button buttonInput = (Button)findViewById(R.id.button_input);
-        buttonInput.setOnClickListener(new View.OnClickListener() {
+        mButtonDeal = (Button)findViewById(R.id.button_deal);
+        mButtonDeal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mAutomatic = true;
+                mStarted = true;
+                clearInput();
+
+                for(int i=0; i<4; i++) {
+                    int index = (int)(Math.random()*10);
+                    mEditNumbers[i].setText(String.valueOf(index + 1));
+                }
+
+
+
+            }
+        });
+
+        mButtonInput = (Button)findViewById(R.id.button_input);
+        mButtonInput.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mLayoutNumbers.setVisibility(View.VISIBLE);
+                mAutomatic = false;
+                mStarted = true;
+                clearInput();
+
+                for(int i=0; i<4; i++) {
+                    mEditNumbers[i].setText("");
+                }
             }
         });
 
@@ -106,51 +160,73 @@ public class Count24Activity extends Activity {
         mButtonGetAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                List<String> resultList = Calculate.easyCount(
-                        new int[] {Integer.valueOf(mEditNumbers[0].getText().toString()),
-                                   Integer.valueOf(mEditNumbers[1].getText().toString()),
-                                   Integer.valueOf(mEditNumbers[2].getText().toString()),
-                                   Integer.valueOf(mEditNumbers[3].getText().toString())});
+                if (mAutomatic) {  // check result
+                    Toast.makeText(Count24Activity.this, R.string.wrong,
+                            Toast.LENGTH_SHORT).show();
 
-                if (resultList.size() > 0) {
-                    Date now = new Date();
-                    String format_answer = getResources().getString(R.string.format_answer);
-                    mTextAnswer.setText(String.format(format_answer,
-                            resultList.get(0),
-                            now.getTime() - mStartDate.getTime()));
                 }
                 else {
-                    Toast.makeText(Count24Activity.this, R.string.no_answer,
-                            Toast.LENGTH_SHORT).show();
-                    mTextAnswer.setText("");
-                }
-            }
-        });
+                    for (EditText e : mEditNumbers) {
+                        if (e.length() == 0)
+                            return;
+                    }
+                    List<String> resultList = Calculate.easyCount(
+                        Integer.valueOf(mEditNumbers[0].getText().toString()),
+                        Integer.valueOf(mEditNumbers[1].getText().toString()),
+                        Integer.valueOf(mEditNumbers[2].getText().toString()),
+                        Integer.valueOf(mEditNumbers[3].getText().toString()));
 
-        Button buttonDeal = (Button)findViewById(R.id.button_deal);
-        buttonDeal.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                for(int i=0; i<4; i++) {
-                    int index = (int)(Math.random()*10);
-                    //mImages[i].setImageResource(mDrawables[index]);
-                    mEditNumbers[i].setText(String.valueOf(index + 1));
+                    if (resultList.size() > 0) {
+                        Date now = new Date();
+                        String format_answer = getResources()
+                                .getString(R.string.format_answer);
+                        mTextAnswer.setText(String.format(format_answer,
+                                resultList.get(0),
+                                now.getTime() - mStartDate.getTime()));
+                    } else {
+                        Toast.makeText(Count24Activity.this, R.string.no_answer,
+                                Toast.LENGTH_SHORT).show();
+                        mTextAnswer.setText("");
+                    }
                 }
-                mStartDate = new Date();
-                mButtonGetAnswer.setEnabled(true);
-                mTextAnswer.setText("");
 
+                mStarted = false;
+                clearInput();
             }
         });
 
         ImageView imageAdd = (ImageView)findViewById(R.id.image_add);
-        imageAdd.setOnClickListener(new View.OnClickListener() {
+        imageAdd.setOnClickListener(new OperatorOnClickListener("+"));
+
+        ImageView imageSub = (ImageView)findViewById(R.id.image_sub);
+        imageSub.setOnClickListener(new OperatorOnClickListener("-"));
+
+        ImageView imageMul = (ImageView)findViewById(R.id.image_mul);
+        imageMul.setOnClickListener(new OperatorOnClickListener("*"));
+
+        ImageView imageDiv = (ImageView)findViewById(R.id.image_div);
+        imageDiv.setOnClickListener(new OperatorOnClickListener("/"));
+
+        ImageView imageLeftP = (ImageView)findViewById(R.id.image_leftp);
+        imageLeftP.setOnClickListener(new OperatorOnClickListener("("));
+
+        ImageView imageRightP = (ImageView)findViewById(R.id.image_rightp);
+        imageRightP.setOnClickListener(new OperatorOnClickListener(")"));
+
+        ImageView imageDel = (ImageView)findViewById(R.id.image_del);
+        imageDel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mTextInput.setText(mTextInput.getText().toString() + "+");
+                if (! mStarted) return;
+
+                if (mStackOperators.size() > 0) {
+                    mStackOperators.pop();
+                    updateInput();
+                }
             }
         });
 
+        clearInput();
     }
 
 
@@ -167,18 +243,6 @@ public class Count24Activity extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
-            case R.id.new_game:
-                for(int i=0; i< 4; i++) {
-                    mEditNumbers[i].setText("");
-                    mImages[i].setImageResource(R.drawable.back);
-                }
-//                ViewGroup.LayoutParams linearParams = mLayoutNumbers.getLayoutParams();
-//                linearParams.height = 0;
-//                mLayoutNumbers.setLayoutParams(linearParams);
-                mLayoutNumbers.setVisibility(View.INVISIBLE);
-
-                mTextAnswer.setText("");
-                return true;
             case  R.id.action_settings:
                 return true;
             default:
@@ -187,7 +251,7 @@ public class Count24Activity extends Activity {
     }
 
     private class CardTextWatcher implements TextWatcher {
-        ImageView mImage;
+        private ImageView mImage;
         public CardTextWatcher(ImageView image) {
             mImage = image;
         }
@@ -199,6 +263,8 @@ public class Count24Activity extends Activity {
         @Override
         public void onTextChanged(CharSequence s,
                                   int start, int before, int count) {
+            if (s.length() == 0) return;
+
             int number = Integer.valueOf(s.toString());
             if (number > 0 && number <= 10)
                 mImage.setImageResource(pickCardId(number));
@@ -207,4 +273,35 @@ public class Count24Activity extends Activity {
         @Override
         public void afterTextChanged(Editable s) {   }
     }
+
+    private class OperatorOnClickListener implements View.OnClickListener {
+        private String mOp;
+        public OperatorOnClickListener(String op) {
+            mOp = op;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (! mStarted) return;
+
+            mStackOperators.push(mOp);
+            updateInput();
+        }
+    }
+
+    private class NumberOnClickListener implements View.OnClickListener {
+        private TextView mTextView;
+        public NumberOnClickListener(TextView textView) {
+            mTextView = textView;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (! mStarted) return;
+
+            mStackOperators.push(mTextView.getText().toString());
+            updateInput();
+        }
+    }
+
 }

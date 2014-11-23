@@ -109,10 +109,10 @@ public class Calculate {
         return newData;
     }
 
-    public static List<String> easyCount(int[] values)
+    public static List<String> easyCount(int i1, int i2, int i3, int i4)
     {
         Calculate cal=new Calculate();
-        cal.count(new Data(values[0], values[1], values[2], values[3]));
+        cal.count(new Data(i1, i2, i3, i4));
         Set<String> set=new HashSet<String>(cal.getAnswerList());
         return new ArrayList<String>(set);
     }

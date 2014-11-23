@@ -7,8 +7,10 @@
     <string name="label_or">or</string>
     <string name="label_deal">Deal</string>
     <string name="label_input">Input</string>
-    <string name="label_answer">Get Answer</string>
+    <string name="label_show_answer">Get Answer</string>
+    <string name="label_check_answer">Check Answer</string>
     <string name="format_answer">%1$s =24; elapsed %2$d ms</string>
-    <string name="no_answer">No Answer</string>
-
+    <string name="no_answer">No Answer!</string>
+    <string name="correct">Correct!</string>
+    <string name="wrong">Wrong!</string>
 </resources>
