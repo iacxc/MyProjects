@@ -1,24 +1,16 @@
 package com.caichengxin.count24;
 
-import android.app.ActionBar;
-import android.content.res.Resources;
-import android.graphics.drawable.BitmapDrawable;
-import android.support.v7.app.ActionBarActivity;
+import android.app.Activity;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.Layout;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,7 +18,7 @@ import java.util.Date;
 import java.util.List;
 
 
-public class Count24Activity extends ActionBarActivity {
+public class Count24Activity extends Activity {
 
     private Date mStartDate;
     private int[][] mDrawables = new int[][]{
@@ -43,9 +35,10 @@ public class Count24Activity extends ActionBarActivity {
                 R.drawable.c10_h, R.drawable.c10_s},
     };
 
-    private ImageView[]  mImages;
+    private ImageView[] mImages;
     private EditText[] mEditNumbers;
-    private TextView mTextAnswer;
+    private TextView mTextAnswer, mTextInput;
+    private Button mButtonGetAnswer;
     private LinearLayout mLayoutNumbers;
 
 
@@ -98,23 +91,8 @@ public class Count24Activity extends ActionBarActivity {
         text3.addTextChangedListener(new CardTextWatcher(image3));
         text4.addTextChangedListener(new CardTextWatcher(image4));
 
-
+        mTextInput = (TextView)findViewById(R.id.text_input);
         mTextAnswer = (TextView)findViewById(R.id.text_answer);
-
-        Button buttonDeal = (Button)findViewById(R.id.button_deal);
-        buttonDeal.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                for(int i=0; i<4; i++) {
-                    int index = (int)(Math.random()*10);
-                    //mImages[i].setImageResource(mDrawables[index]);
-                    mEditNumbers[i].setText(String.valueOf(index + 1));
-                }
-                mStartDate = new Date();
-                mTextAnswer.setText("");
-
-            }
-        });
 
         Button buttonInput = (Button)findViewById(R.id.button_input);
         buttonInput.setOnClickListener(new View.OnClickListener() {
@@ -124,8 +102,8 @@ public class Count24Activity extends ActionBarActivity {
             }
         });
 
-        Button buttonGetAnswer = (Button)findViewById(R.id.button_answer);
-        buttonGetAnswer.setOnClickListener(new View.OnClickListener() {
+        mButtonGetAnswer = (Button)findViewById(R.id.button_answer);
+        mButtonGetAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 List<String> resultList = Calculate.easyCount(
@@ -148,6 +126,31 @@ public class Count24Activity extends ActionBarActivity {
                 }
             }
         });
+
+        Button buttonDeal = (Button)findViewById(R.id.button_deal);
+        buttonDeal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                for(int i=0; i<4; i++) {
+                    int index = (int)(Math.random()*10);
+                    //mImages[i].setImageResource(mDrawables[index]);
+                    mEditNumbers[i].setText(String.valueOf(index + 1));
+                }
+                mStartDate = new Date();
+                mButtonGetAnswer.setEnabled(true);
+                mTextAnswer.setText("");
+
+            }
+        });
+
+        ImageView imageAdd = (ImageView)findViewById(R.id.image_add);
+        imageAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mTextInput.setText(mTextInput.getText().toString() + "+");
+            }
+        });
+
     }
 
 

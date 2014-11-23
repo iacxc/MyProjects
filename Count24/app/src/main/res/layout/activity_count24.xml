@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".Count24Activity">
+    tools:context=".Count24Activity"
+    android:background="#ffffffff">
 
 
     <LinearLayout
@@ -39,18 +40,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TableRow >
-            <ImageView style="@style/image_card"
-                       android:layout_height="50dp"
-                       android:src="@android:drawable/ic_input_add"/>
-            <ImageView style="@style/image_card"
-                       android:layout_height="50dp"
-                       android:src="@android:drawable/ic_input_delete"/>
-            <ImageView style="@style/image_card"
-                       android:layout_height="50dp"
-                       />
-            <ImageView style="@style/image_card"
-                       android:layout_height="50dp"
-                       android:src="@android:drawable/ic_input_add"/>
+            <ImageView android:id="@+id/image_add"
+                       style="@style/image_operator"
+                       android:src="@drawable/add"/>
+            <ImageView android:id="@+id/image_sub"
+                style="@style/image_operator"
+                       android:src="@drawable/sub"/>
+            <ImageView android:id="@+id/image_mul"
+                style="@style/image_operator"
+                android:src="@drawable/mul" />
+            <ImageView android:id="@+id/image_div"
+                style="@style/image_operator"
+                       android:src="@drawable/division"/>
+            <ImageView android:id="@+id/image_leftp"
+                style="@style/image_operator"
+                android:src="@drawable/left_p" />
+            <ImageView android:id="@+id/image_rightp"
+                style="@style/image_operator"
+                android:src="@drawable/right_p" />
+            <ImageView android:id="@+id/image_del"
+                style="@style/image_operator"
+                android:src="@drawable/del" />
         </TableRow>
         <TableRow>
         <ImageView style="@style/image_card"
@@ -78,6 +88,13 @@
                       android:id="@+id/text4"/>
     </LinearLayout>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/text_input"
+        android:textSize="30sp"
+        android:editable="false" />
+
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -87,14 +104,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/label_answer"
-            android:id="@+id/button_answer"/>
+            android:id="@+id/button_answer"
+            android:enabled="true" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:id="@+id/text_answer"
             android:layout_weight="1"
-            android:gravity="center_vertical"/>
+            android:gravity="center_vertical"
+            android:textSize="30sp" />
     </LinearLayout>
 
 </LinearLayout>
