@@ -25,7 +25,31 @@ public class Calculator {
                                String.valueOf(v3),
                                String.valueOf(v4)};
         }
+
+        public int getLength() {
+            return arr.length;
+        }
     }
+
+
+    private Data getNewData(Data data, int i) {
+        //get a copy of data, except the ith
+        //keep the expStr no change
+        Data newData= new Data();
+        newData.expStr = data.expStr;
+        newData.arr = new float[data.getLength() - 1];
+        newData.strs = new String[data.getLength() - 1];
+
+        for(int m=0, n=0; m < data.getLength(); m++){
+            if(m != i){
+                newData.arr[n]  = data.arr[m];
+                newData.strs[n] = data.strs[m];
+                n++;
+            }
+        }
+        return newData;
+    }
+
 
     public void count24(Data data, List<String> answerList){
         float[] arr = data.arr;
@@ -37,13 +61,13 @@ public class Calculator {
         }
         
         for(int i=0; i<arr.length-1; i++){
-            for(int j=i+1; j<arr.length; j++){
-                float x=arr[i];
-                float y=arr[j];
-                String xs=data.strs[i];
-                String ys=data.strs[j];
+            for(int j = i+1; j<arr.length; j++){
+                float x = arr[i];
+                float y = arr[j];
+                String xs = data.strs[i];
+                String ys = data.strs[j];
                 for(int k=0; k<6; k++){
-                    Data newData = getNewArr(data,i);
+                    Data newData = getNewData(data,i);
                     switch(k){
                         case 0:
                             newData.arr[j-1] = x + y;
@@ -62,20 +86,19 @@ public class Calculator {
                             newData.expStr   = xs + "*" + ys;
                             break;
                         case 4:
-                            if(y!=0){
+                            if( y!=0 ){
                                 newData.arr[j-1] = x / y;
                                 newData.expStr   = xs + "/" + ys;
-                            }else {
-                                continue;
                             }
+                            else
+                                continue;
                             break;
                         case 5:
-                            if(x!=0){
+                            if( x!=0 ){
                                 newData.arr[j-1] = y / x;
                                 newData.expStr   = ys + "/" + xs;
-                            }else {
+                            }else
                                 continue;
-                            }
                             break;
                     }
                     
@@ -88,25 +111,8 @@ public class Calculator {
 
     }
     
-    private static Data getNewArr(Data data, int i) {
-        //get a copy of data, except the ith
-        //keep the expStr no change
-        Data newData= new Data();
-        newData.expStr = data.expStr;
-        newData.arr=new float[data.arr.length-1];
-        newData.strs=new String[data.arr.length-1];
-        
-        for(int m=0,len=data.arr.length,n=0;m<len;m++){
-            if(m!=i){
-                newData.arr[n]  = data.arr[m];
-                newData.strs[n] = data.strs[m];
-                n++;
-            }
-        }
-        return newData;
-    }
 
-    public static List<String> easyCount(int i1, int i2, int i3, int i4)
+    public static List<String> easyCount24(int i1, int i2, int i3, int i4)
     {
         Calculator cal=new Calculator();
         List<String> answerList=new ArrayList<String>();
