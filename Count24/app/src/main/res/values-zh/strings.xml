@@ -10,7 +10,7 @@
     <string name="label_show_answer">显示答案</string>
     <string name="label_check_answer">检查答案</string>
     <string name="no_answer">无解</string>
-    <string name="format_answer">%1$s =24; 耗时 %2$d 毫秒</string>
-    <string name="correct">对了!</string>
+    <string name="format_time">耗时 %1$d 毫秒</string>
+    <string name="correct">恭喜，对了!</string>
     <string name="wrong">错了!</string>
 </resources>
