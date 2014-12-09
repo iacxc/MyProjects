@@ -137,6 +137,7 @@ public class Calculator {
             case '-':
                 return 0;
             case '*':
+            case 'X':
             case '/':
                 return 1;
             case '(':
@@ -188,8 +189,8 @@ public class Calculator {
                 check(s, opStack, suffixExpr);
         }
 
-        for (String s : opStack)
-            suffixExpr.push(s);
+        while (! opStack.empty())
+            suffixExpr.push(opStack.pop());
 
         return suffixExpr;
     }
@@ -210,7 +211,7 @@ public class Calculator {
                 switch (s.charAt(0)) {
                     case '+': res = op2 + op1; break;
                     case '-': res = op2 - op1; break;
-                    case '*': res = op2 * op1; break;
+                    case '*': case 'X': res = op2 * op1; break;
                     default : res = op2 / op1; break;
                 }
                 stackResult.push(String.valueOf(res));

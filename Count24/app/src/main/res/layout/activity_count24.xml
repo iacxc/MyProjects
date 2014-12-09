@@ -20,14 +20,6 @@
             android:layout_weight="1"
             android:textSize="20sp"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="@string/label_or"
-            android:layout_weight="1"
-            android:gravity="center_vertical|center_horizontal"
-            android:textSize="20sp"/>
-
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -60,9 +52,6 @@
             <ImageView android:id="@+id/image_rightp"
                 style="@style/image_operator"
                 android:src="@drawable/right_p" />
-            <ImageView android:id="@+id/image_del"
-                style="@style/image_operator"
-                android:src="@drawable/del" />
         </TableRow>
         <TableRow>
         <ImageView style="@style/image_card"
@@ -97,18 +86,20 @@
         <TextView android:id="@+id/text_input"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_margin="2dp"
-            android:inputType="number"
             android:textSize="20sp"
-            android:editable="false"
             android:layout_weight="1"
-            android:gravity="center_vertical"/>
+            android:gravity="center_vertical"
+            android:textColor="#ff000000"/>
+
+        <ImageView android:id="@+id/image_del"
+                   android:layout_width="50dp"
+                   android:layout_height="60dp"
+            android:src="@drawable/del" />
+
         <ImageView android:id="@+id/image_clear"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:layout_margin="2dp"
-            android:src="@drawable/clear"
-            android:layout_weight="0"/>
+            android:src="@drawable/clear"/>
 
     </LinearLayout>
 
@@ -120,9 +111,17 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/label_show_answer"
+            android:text="@string/label_ok"
+            android:id="@+id/button_ok"
+            android:gravity="center_vertical"
+            android:textSize="20sp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_answer"
             android:id="@+id/button_answer"
-            android:enabled="true"
+            android:gravity="center_vertical"
             android:textSize="20sp"/>
 
         <TextView
@@ -131,7 +130,8 @@
             android:id="@+id/text_answer"
             android:layout_weight="1"
             android:gravity="center_vertical"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:textColor="#ff000000"/>
     </LinearLayout>
 
 </LinearLayout>
