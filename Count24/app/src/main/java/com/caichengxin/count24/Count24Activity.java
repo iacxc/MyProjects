@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,8 +22,9 @@ import java.util.Stack;
 
 public class Count24Activity extends Activity {
 
-    private Date mStartDate;
-    private int[][] mDrawables = new int[][]{
+    private static final String TAG = "Count24Activity";
+    // drawable constants
+    private final int[][] mDrawables = new int[][]{
         {R.drawable.c1_c, R.drawable.c1_d, R.drawable.c1_h, R.drawable.c1_s},
         {R.drawable.c2_c, R.drawable.c2_d, R.drawable.c2_h, R.drawable.c2_s},
         {R.drawable.c3_c, R.drawable.c3_d, R.drawable.c3_h, R.drawable.c3_s},
@@ -36,16 +38,23 @@ public class Count24Activity extends Activity {
                 R.drawable.c10_h, R.drawable.c10_s},
     };
 
-    private ImageView[] mImages;
+    private final int mBacks[] = new int[] {
+            R.drawable.back, R.drawable.back1,
+            R.drawable.back2, R.drawable.back3};
+
+    // control widgets
+    private ImageView[] mImageCards;
     private EditText[] mEditNumbers;
+    private Button mButtonDeal, mButtonInput, mButtonOK, mButtonGetAnswer;
+    private LinearLayout mLayoutNumbers, mLayoutInputs;
     private TextView mTextAnswer, mTextInput;
-    private Button mButtonDeal, mButtonInput, mButtonGetAnswer;
-    private LinearLayout mLayoutNumbers;
 
-    private Stack<String> mStackOperators = new Stack<String>();
+    // class members
+    private Date mStartDate;
+    private Stack<String> mStackInputs = new Stack<String>();
     private boolean mStarted = false;
-
     private boolean mAutomatic = true;
+
 
     private int pickCardId(int n) {
         int index = (int)(Math.random() * 3);
@@ -54,37 +63,33 @@ public class Count24Activity extends Activity {
 
 
     public void clearInput() {
-        mStartDate = new Date();
         mTextInput.setText("");
-
         mTextAnswer.setText("");
-
-        mButtonGetAnswer.setEnabled(true);
 
         if (mAutomatic) {
             mLayoutNumbers.setVisibility(View.INVISIBLE);
-            mTextInput.setVisibility(View.VISIBLE);
-            mButtonGetAnswer.setText(R.string.label_check_answer);
+            mLayoutInputs.setVisibility(View.VISIBLE);
         }
         else {
             mLayoutNumbers.setVisibility(View.VISIBLE);
-            mTextInput.setVisibility(View.INVISIBLE);
-            mButtonGetAnswer.setText(R.string.label_show_answer);
+            mLayoutInputs.setVisibility(View.INVISIBLE);
         }
 
-        mButtonGetAnswer.setVisibility(mStarted ? View.VISIBLE : View.INVISIBLE);
+        mButtonOK.setVisibility(mStarted ? View.VISIBLE
+                : View.INVISIBLE);
+
+        mButtonGetAnswer.setVisibility(mStarted ? View.VISIBLE
+                                                : View.INVISIBLE);
+
+        mStackInputs.clear();
     }
 
 
     private void updateInput() {
         StringBuilder sb = new StringBuilder();
-        boolean first = true;
-        for (String item : mStackOperators)
+        for (String item : mStackInputs)
         {
-            if (first)
-                first = false;
-            else
-                sb.append(" ");
+            sb.append(" ");
             sb.append(item);
         }
 
@@ -98,6 +103,7 @@ public class Count24Activity extends Activity {
         setContentView(R.layout.activity_count24);
 
         mLayoutNumbers = (LinearLayout)findViewById(R.id.layout_numbers);
+        mLayoutInputs = (LinearLayout)findViewById(R.id.layout_inputs);
 
         mTextInput = (TextView)findViewById(R.id.text_input);
         mTextAnswer = (TextView)findViewById(R.id.text_answer);
@@ -106,7 +112,7 @@ public class Count24Activity extends Activity {
         ImageView image2 = (ImageView)findViewById(R.id.image2);
         ImageView image3 = (ImageView)findViewById(R.id.image3);
         ImageView image4 = (ImageView)findViewById(R.id.image4);
-        mImages = new ImageView [] {image1, image2, image3, image4};
+        mImageCards = new ImageView [] {image1, image2, image3, image4};
 
         EditText text1 = (EditText)findViewById(R.id.text1);
         EditText text2 = (EditText)findViewById(R.id.text2);
@@ -135,10 +141,10 @@ public class Count24Activity extends Activity {
                 for(int i=0; i<4; i++) {
                     int index = (int)(Math.random()*10);
                     mEditNumbers[i].setText(String.valueOf(index + 1));
+                    mImageCards[i].setEnabled(true);
                 }
 
-
-
+                mStartDate = new Date();
             }
         });
 
@@ -150,8 +156,49 @@ public class Count24Activity extends Activity {
                 mStarted = true;
                 clearInput();
 
+                int idxBack = (int)(Math.random() * mBacks.length);
                 for(int i=0; i<4; i++) {
                     mEditNumbers[i].setText("");
+                    mImageCards[i].setImageResource(mBacks[idxBack]);
+                }
+            }
+        });
+
+        mButtonOK = (Button)findViewById(R.id.button_ok);
+        mButtonOK.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // check result
+                if (mStackInputs.empty())
+                    return;
+
+                Date now = new Date();
+                String format_time = getResources()
+                        .getString(R.string.format_time);
+                mTextAnswer.setText(String.format(format_time,
+                        (now.getTime() - mStartDate.getTime()) / 1000.0));
+
+                try {
+                    int answer = Calculator.calculate(mStackInputs);
+                    mStackInputs.push("=");
+                    mStackInputs.push(String.valueOf(answer));
+                    updateInput();
+
+                    if (answer == 24) {
+                        Toast.makeText(Count24Activity.this,
+                                R.string.correct,
+                                Toast.LENGTH_LONG).show();
+                    }
+                    else {
+                        Toast.makeText(Count24Activity.this,
+                                R.string.wrong,
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
+                catch (Exception e) {
+                    Toast.makeText(Count24Activity.this,
+                            R.string.wrong,
+                            Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -160,38 +207,25 @@ public class Count24Activity extends Activity {
         mButtonGetAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mAutomatic) {  // check result
-                    Toast.makeText(Count24Activity.this, R.string.wrong,
-                            Toast.LENGTH_SHORT).show();
+                // find solution to count24
+                for (EditText e : mEditNumbers) {
+                    if (e.length() == 0)
+                        return;
+                }
+                List<String> resultList = Calculator.easyCount24(
+                    Integer.valueOf(mEditNumbers[0].getText().toString()),
+                    Integer.valueOf(mEditNumbers[1].getText().toString()),
+                    Integer.valueOf(mEditNumbers[2].getText().toString()),
+                    Integer.valueOf(mEditNumbers[3].getText().toString()));
 
+                if (resultList.size() > 0) {
+                    mTextAnswer.setText(resultList.get(0));
                 }
                 else {
-                    for (EditText e : mEditNumbers) {
-                        if (e.length() == 0)
-                            return;
-                    }
-                    List<String> resultList = Calculate.easyCount(
-                        Integer.valueOf(mEditNumbers[0].getText().toString()),
-                        Integer.valueOf(mEditNumbers[1].getText().toString()),
-                        Integer.valueOf(mEditNumbers[2].getText().toString()),
-                        Integer.valueOf(mEditNumbers[3].getText().toString()));
-
-                    if (resultList.size() > 0) {
-                        Date now = new Date();
-                        String format_answer = getResources()
-                                .getString(R.string.format_answer);
-                        mTextAnswer.setText(String.format(format_answer,
-                                resultList.get(0),
-                                now.getTime() - mStartDate.getTime()));
-                    } else {
-                        Toast.makeText(Count24Activity.this, R.string.no_answer,
-                                Toast.LENGTH_SHORT).show();
-                        mTextAnswer.setText("");
-                    }
+                    Toast.makeText(Count24Activity.this, R.string.no_answer,
+                            Toast.LENGTH_SHORT).show();
+                    mTextAnswer.setText("");
                 }
-
-                mStarted = false;
-                clearInput();
             }
         });
 
@@ -202,7 +236,7 @@ public class Count24Activity extends Activity {
         imageSub.setOnClickListener(new OperatorOnClickListener("-"));
 
         ImageView imageMul = (ImageView)findViewById(R.id.image_mul);
-        imageMul.setOnClickListener(new OperatorOnClickListener("*"));
+        imageMul.setOnClickListener(new OperatorOnClickListener("X"));
 
         ImageView imageDiv = (ImageView)findViewById(R.id.image_div);
         imageDiv.setOnClickListener(new OperatorOnClickListener("/"));
@@ -217,16 +251,27 @@ public class Count24Activity extends Activity {
         imageDel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (! mStarted) return;
-
-                if (mStackOperators.size() > 0) {
-                    mStackOperators.pop();
+                if (mStackInputs.size() > 0) {
+                    mStackInputs.pop();
                     updateInput();
                 }
             }
         });
 
+        ImageView imageClear = (ImageView)findViewById(R.id.image_clear);
+        imageClear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mStackInputs.clear();
+                updateInput();
+            }
+        });
+
         clearInput();
+
+        mLayoutNumbers.setVisibility(View.INVISIBLE);
+        mLayoutInputs.setVisibility(View.INVISIBLE);
+
     }
 
 
@@ -282,9 +327,7 @@ public class Count24Activity extends Activity {
 
         @Override
         public void onClick(View v) {
-            if (! mStarted) return;
-
-            mStackOperators.push(mOp);
+            mStackInputs.push(mOp);
             updateInput();
         }
     }
@@ -297,9 +340,7 @@ public class Count24Activity extends Activity {
 
         @Override
         public void onClick(View v) {
-            if (! mStarted) return;
-
-            mStackOperators.push(mTextView.getText().toString());
+            mStackInputs.push(mTextView.getText().toString());
             updateInput();
         }
     }
