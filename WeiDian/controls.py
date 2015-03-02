@@ -47,7 +47,8 @@ class DataListCtrl(wx.ListCtrl):
         with file(path, "rb") as csvfile:
             reader = csv.reader(csvfile)
 
-            rows = list(reader)
+            rows = [ [unicode(item, "utf-8") for item in row]
+                                            for row in reader ]
 
         return rows
 
@@ -59,8 +60,10 @@ class DataListCtrl(wx.ListCtrl):
             colcount = self.GetColumnCount()
 
             for rindex in range(self.GetItemCount()):
-                writer.writerow([self.GetItemText(rindex, cindex)
-                                      for cindex in range(colcount)])
+                row = [self.GetItemText(rindex, cindex).encode("utf-8")
+                                      for cindex in range(colcount)]
+
+                writer.writerow(row)
 
 
 class ProdDlg(wx.Dialog):

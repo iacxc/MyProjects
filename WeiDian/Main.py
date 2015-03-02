@@ -158,7 +158,11 @@ class CatalogFrame(wx.Frame):
 
         if dlg.ShowModal() ==  wx.ID_OK:
             path = dlg.GetPath()
-            self.lstData.SaveTo(path)
+            try:
+                self.lstData.SaveTo(path)
+            except Exception as exp:
+                wx.MessageBox(exp.message + ",\nExport failed",
+                              R.String.TITLE_FAILURE)
 
         dlg.Destroy()
 
