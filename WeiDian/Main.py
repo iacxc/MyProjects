@@ -1,35 +1,34 @@
 #!/usr/bin/python -O
 
+import os, sys
 import wx
-import DBUtil
-import csv
 
-ID_CATALOG =  wx.NewId()
+import DBUtil
+import resource as R
+from controls import DataListCtrl, ProdDlg
+
 
 class MainFrame(wx.Frame):
-    def __init__(self, title):
-        super(MainFrame, self).__init__(None, -1, title, size=(600, 300))
-
-        self.__frmcatalog = None
+    def __init__(self, parent=None, title=""):
+        super(MainFrame, self).__init__(parent, -1, title, size=(600, 300))
 
         menu = wx.Menu()
-        menu.Append(ID_CATALOG, '&Catalog')
+        menu.Append(R.Id.ID_CATALOG, R.String.MENU_CATALOG)
         menu.AppendSeparator()
-        menu.Append(wx.ID_EXIT, 'E&xit')
+        menu.Append(wx.ID_EXIT, R.String.MENU_EXIT)
 
         menubar = wx.MenuBar()
-        menubar.Append(menu, '&Tool')
+        menubar.Append(menu, R.String.MENU_TOOL)
 
         self.SetMenuBar(menubar)
 
-        self.Bind(wx.EVT_MENU, self.OnCatalog, id=ID_CATALOG)
+        self.__frmcatalog = CatalogFrame(self)
+
+        self.Bind(wx.EVT_MENU, self.OnCatalog, id=R.Id.ID_CATALOG)
         self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
 
 
     def OnCatalog(self, event):
-        if self.__frmcatalog is None:
-            self.__frmcatalog = CatalogFrame(self)
-
         self.__frmcatalog.Show()
 
 
@@ -37,16 +36,13 @@ class MainFrame(wx.Frame):
         self.Close(True)
 
 
-ID_NEW    = wx.NewId()
-ID_DELETE = wx.NewId()
-ID_MODIFY = wx.NewId()
-ID_IMPORT = wx.NewId()
-ID_EXPORT = wx.NewId()
+
 
 class CatalogFrame(wx.Frame):
     tablename = 'T_CATALOG'
-    def __init__(self, parent, title='Catalog'):
-        super(CatalogFrame, self).__init__(parent, title='Catalog',
+    def __init__(self, parent=None, title=R.String.TITLE_CATALOG):
+        super(CatalogFrame, self).__init__(parent,
+                                           title=title,
                                            size=(600, 400))
         self.initUI()
         self.refreshData()
@@ -57,30 +53,83 @@ class CatalogFrame(wx.Frame):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         self.lstData = DataListCtrl(panel)
-        vbox.Add(self.lstData, 1, wx.EXPAND, border=5)
+        vbox.Add(self.lstData, 1, wx.EXPAND, border=R.Value.BORDER)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(wx.Button(panel, ID_NEW,    'New'),    1, wx.EXPAND)
-        hbox.Add(wx.Button(panel, ID_DELETE, 'Delete'), 1, wx.EXPAND)
-        hbox.Add(wx.Button(panel, ID_MODIFY, 'Modify'), 1, wx.EXPAND)
-        hbox.Add(wx.Button(panel, ID_IMPORT, 'Import'), 1, wx.EXPAND)
-        hbox.Add(wx.Button(panel, ID_EXPORT, 'Export'), 1, wx.EXPAND)
+        hbox.Add(wx.Button(panel, R.Id.ID_ADD,    R.String.BTN_ADD),
+                 1, wx.EXPAND)
+        hbox.Add(wx.Button(panel, R.Id.ID_DELETE, R.String.BTN_DELETE),
+                 1, wx.EXPAND)
+        hbox.Add(wx.Button(panel, R.Id.ID_MODIFY, R.String.BTN_MODIFY),
+                 1, wx.EXPAND)
+        hbox.Add(wx.Button(panel, R.Id.ID_IMPORT, R.String.BTN_IMPORT),
+                 1, wx.EXPAND)
+        hbox.Add(wx.Button(panel, R.Id.ID_EXPORT, R.String.BTN_EXPORT),
+                 1, wx.EXPAND)
 
-        vbox.Add(hbox, 0, wx.EXPAND, border=5)
+        vbox.Add(hbox, 0, wx.EXPAND, border=R.Value.BORDER)
         panel.SetSizer(vbox)
 
-        self.Bind(wx.EVT_BUTTON, self.OnNew, id=ID_NEW)
-        self.Bind(wx.EVT_BUTTON, self.OnImport, id=ID_IMPORT)
-        self.Bind(wx.EVT_BUTTON, self.OnExport, id=ID_EXPORT)
+        self.Bind(wx.EVT_BUTTON, self.OnAdd, id=R.Id.ID_ADD)
+        self.Bind(wx.EVT_BUTTON, self.OnDelete, id=R.Id.ID_DELETE)
+        self.Bind(wx.EVT_BUTTON, self.OnModify, id=R.Id.ID_MODIFY)
+        self.Bind(wx.EVT_BUTTON, self.OnImport, id=R.Id.ID_IMPORT)
+        self.Bind(wx.EVT_BUTTON, self.OnExport, id=R.Id.ID_EXPORT)
 
 
     def refreshData(self):
-        self.lstData.RefreshData(
-            DBUtil.get_table_data(self.tablename))
+        self.lstData.RefreshData(DBUtil.get_table_data(self.tablename))
 
 
-    def OnNew(self, event):
-        pass
+    def OnAdd(self, event):
+        dlg = ProdDlg(self)
+        if dlg.ShowModal() == wx.ID_OK:
+            try:
+                DBUtil.insert(self.tablename,
+                          (dlg.prodid, dlg.proddesc, dlg.barcode))
+
+                self.refreshData()
+            except Exception as exp:
+                wx.MessageBox(exp.message + ",\nAdd failed",
+                              R.String.TITLE_FAILURE)
+
+        dlg.Destroy()
+
+
+    def OnDelete(self, event):
+        prodid, proddesc, barcode = self.lstData.GetRow()
+        dlg = wx.MessageDialog(self,
+                            "Are you sure to delete product {0}".format(prodid),
+                            R.String.TITLE_DELETE,
+                            wx.YES_NO|wx.ICON_QUESTION)
+
+        if dlg.ShowModal() == wx.ID_YES:
+            try:
+                DBUtil.delete(self.tablename, (prodid,))
+
+                self.lstData.Delete()
+            except Exception as exp:
+                wx.MessageBox(exp.message + ",\nDelete failed",
+                              R.String.TITLE_FAILURE)
+
+        dlg.Destroy()
+
+    def OnModify(self, event):
+        dlg = ProdDlg(self, R.Value.MODE_MODIFY)
+
+        dlg.prodid, dlg.proddesc, dlg.barcode = self.lstData.GetRow()
+
+        if dlg.ShowModal() == wx.ID_OK:
+            try:
+                DBUtil.update(self.tablename,
+                         (dlg.prodid,), (dlg.proddesc, dlg.barcode))
+
+                self.refreshData()
+            except Exception as exp:
+                wx.MessageBox(exp.message + ",\nModify failed",
+                              R.String.TITLE_FAILURE)
+
+        dlg.Destroy()
 
 
     def OnImport(self, event):
@@ -88,15 +137,18 @@ class CatalogFrame(wx.Frame):
                             wildcard="*.csv",
                             style=wx.FD_OPEN)
 
-        if dlg.ShowModal() ==  wx.ID_OK:
+        if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
 
-            DBUtil.set_table_data(self.tablename,
+            try:
+                DBUtil.set_table_data(self.tablename,
                                   self.lstData.LoadFrom(path))
+                self.refreshData()
+            except Exception as exp:
+                wx.MessageBox(exp.message + ",\nImport failed",
+                              R.String.TITLE_FAILURE)
 
         dlg.Destroy()
-
-        self.refreshData()
 
 
     def OnExport(self, event):
@@ -111,45 +163,15 @@ class CatalogFrame(wx.Frame):
         dlg.Destroy()
 
 
-class DataListCtrl(wx.ListCtrl):
-    def __init__(self, parent):
-        super(DataListCtrl, self).__init__(parent, style=wx.LC_REPORT)
-
-
-    def RefreshData(self, (titles, rows)):
-        self.ClearAll()
-
-        for index, title in enumerate(titles):
-            self.InsertColumn(index, title)
-            self.SetColumnWidth(index, len(title)*30)
-
-        for row in rows:
-            self.Append(row)
-
-
-    def LoadFrom(self, path):
-        with file(path, "rb") as csvfile:
-            reader = csv.reader(csvfile)
-
-            rows = list(reader)
-
-        return rows
-
-
-    def SaveTo(self, path):
-        with file(path, "wb") as csvfile:
-            writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-
-            colcount = self.GetColumnCount()
-
-            for rindex in range(self.GetItemCount()):
-                writer.writerow([self.GetItemText(rindex, cindex)
-                                      for cindex in range(colcount)])
-
-
 class MainApp(wx.App):
     def OnInit(self):
-        frame = CatalogFrame(None, 'WeiDian')
+        if not os.path.exists(R.Value.DBFILE):
+            wx.MessageBox('Failed to start, please run init.py first',
+                      'Failed to start',
+                      style=wx.OK|wx.ICON_ERROR)
+            sys.exit(1)
+
+        frame = MainFrame(title=R.String.TITLE_MAIN)
         frame.Show()
 
         return True
