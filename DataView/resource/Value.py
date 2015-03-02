@@ -1,7 +1,5 @@
 #!/usr/bin/python -O
 
-import wx
 
-
-ID_EXECUTE = wx.NewId()
-
+FONTSIZE = 13
+BORDER = 5
