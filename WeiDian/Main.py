@@ -36,8 +36,6 @@ class MainFrame(wx.Frame):
         self.Close(True)
 
 
-
-
 class CatalogFrame(wx.Frame):
     tablename = 'T_CATALOG'
     def __init__(self, parent=None, title=R.String.TITLE_CATALOG):
@@ -53,20 +51,20 @@ class CatalogFrame(wx.Frame):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         self.lstData = DataListCtrl(panel)
-        vbox.Add(self.lstData, 1, wx.EXPAND, border=R.Value.BORDER)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.Add(wx.Button(panel, R.Id.ID_ADD,    R.String.BTN_ADD),
-                 1, wx.EXPAND)
-        hbox.Add(wx.Button(panel, R.Id.ID_DELETE, R.String.BTN_DELETE),
-                 1, wx.EXPAND)
-        hbox.Add(wx.Button(panel, R.Id.ID_MODIFY, R.String.BTN_MODIFY),
-                 1, wx.EXPAND)
-        hbox.Add(wx.Button(panel, R.Id.ID_IMPORT, R.String.BTN_IMPORT),
-                 1, wx.EXPAND)
-        hbox.Add(wx.Button(panel, R.Id.ID_EXPORT, R.String.BTN_EXPORT),
-                 1, wx.EXPAND)
+        hbox.AddMany([(wx.Button(panel, R.Id.ID_ADD,    R.String.BTN_ADD),
+                            1, wx.EXPAND),
+                      (wx.Button(panel, R.Id.ID_DELETE, R.String.BTN_DELETE),
+                            1, wx.EXPAND),
+                      (wx.Button(panel, R.Id.ID_MODIFY, R.String.BTN_MODIFY),
+                            1, wx.EXPAND),
+                      (wx.Button(panel, R.Id.ID_IMPORT, R.String.BTN_IMPORT),
+                            1, wx.EXPAND),
+                      (wx.Button(panel, R.Id.ID_EXPORT, R.String.BTN_EXPORT),
+                            1, wx.EXPAND)])
 
+        vbox.Add(self.lstData, 1, wx.EXPAND, border=R.Value.BORDER)
         vbox.Add(hbox, 0, wx.EXPAND, border=R.Value.BORDER)
         panel.SetSizer(vbox)
 
@@ -98,12 +96,13 @@ class CatalogFrame(wx.Frame):
 
     def OnDelete(self, event):
         prodid, proddesc, barcode = self.lstData.GetRow()
-        dlg = wx.MessageDialog(self,
-                            "Are you sure to delete product {0}".format(prodid),
-                            R.String.TITLE_DELETE,
-                            wx.YES_NO|wx.ICON_QUESTION)
+        result = wx.MessageBox(
+                     "Are you sure to delete product {0}".format(prodid),
+                     R.String.TITLE_DELETE,
+                     wx.CENTER|wx.YES_NO|wx.ICON_QUESTION, 
+                     self)
 
-        if dlg.ShowModal() == wx.ID_YES:
+        if result == wx.YES:
             try:
                 DBUtil.delete(self.tablename, (prodid,))
 
@@ -112,7 +111,6 @@ class CatalogFrame(wx.Frame):
                 wx.MessageBox(exp.message + ",\nDelete failed",
                               R.String.TITLE_FAILURE)
 
-        dlg.Destroy()
 
     def OnModify(self, event):
         dlg = ProdDlg(self, R.Value.MODE_MODIFY)

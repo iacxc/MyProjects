@@ -76,9 +76,9 @@ class ProdDlg(wx.Dialog):
     def initUI(self, mode):
         msizer = wx.BoxSizer(wx.VERTICAL)
 
-        box1 = wx.FlexGridSizer(3, 2, R.Value.BORDER, R.Value.BORDER)
+        inputszr = wx.FlexGridSizer(3, 2, R.Value.BORDER, R.Value.BORDER)
 
-        box1.AddGrowableCol(1, 1)
+        inputszr.AddGrowableCol(1, 1)
 
         self.txtProdId = wx.TextCtrl(self)
         self.txtProdId.SetEditable(mode == R.Value.MODE_ADD)
@@ -86,23 +86,26 @@ class ProdDlg(wx.Dialog):
         self.txtProdDesc = wx.TextCtrl(self)
         self.txtBarcode = wx.TextCtrl(self)
 
-        box1.Add(wx.StaticText(self, label=R.String.ST_PRODID),
-                0, wx.ALIGN_CENTER_VERTICAL)
-        box1.Add(self.txtProdId, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL)
-        box1.Add(wx.StaticText(self, label=R.String.ST_PRODDESC),
-                0, wx.ALIGN_CENTER_VERTICAL)
-        box1.Add(self.txtProdDesc, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL)
-        box1.Add(wx.StaticText(self, label=R.String.ST_BARCODE),
-                0, wx.ALIGN_CENTER_VERTICAL)
-        box1.Add(self.txtBarcode, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL)
+        inputszr.AddMany([(wx.StaticText(self, -1, R.String.ST_PRODID),
+                               0, wx.ALIGN_CENTER_VERTICAL),
+                          (self.txtProdId, 
+                               1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL),
+                          (wx.StaticText(self, -1, R.String.ST_PRODDESC),
+                               0, wx.ALIGN_CENTER_VERTICAL),
+                          (self.txtProdDesc, 
+                               1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL),
+                          (wx.StaticText(self, -1, R.String.ST_BARCODE),
+                               0, wx.ALIGN_CENTER_VERTICAL),
+                          (self.txtBarcode, 
+                               1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL)])
 
-        msizer.Add(box1, 1, wx.EXPAND|wx.ALL, R.Value.BORDER)
 
         btnszr = wx.StdDialogButtonSizer()
         btnszr.AddButton(wx.Button(self, wx.ID_OK))
         btnszr.AddButton(wx.Button(self, wx.ID_CANCEL))
 
-        msizer.Add(btnszr, 0, wx.ALIGN_CENTER|wx.ALL, R.Value.BORDER)
+        msizer.AddMany([(inputszr, 1, wx.EXPAND|wx.ALL, R.Value.BORDER),
+                        (btnszr, 0, wx.ALIGN_CENTER|wx.ALL, R.Value.BORDER)])
         btnszr.Realize()
 
         self.SetSizer(msizer)

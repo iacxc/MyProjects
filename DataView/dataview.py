@@ -110,6 +110,7 @@ class DataFrame(wx.Frame):
         super(DataFrame, self).__init__(parent, ID, title, size=size) 
 
         self.initUI()
+        self.SetInitialSize()
 
 
     def initUI(self):
@@ -121,43 +122,43 @@ class DataFrame(wx.Frame):
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        # connection string
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-
+        # connection string
         stOdbc = wx.StaticText(panel, label=R.String.CONNSTR_LABEL)
         stOdbc.SetFont(font)
-        hbox1.Add(stOdbc, 0)
 
         self.txtOdbc = wx.TextCtrl(panel, value=self.default_connstr)
         self.txtOdbc.SetFont(font)
-        hbox1.Add(self.txtOdbc, 1, wx.EXPAND|wx.LEFT, border=R.Value.BORDER)
 
-        vbox.Add(hbox1, 0, flag=wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP,
-                 border=R.Value.BORDER)
+        hbox1.Add(stOdbc, flag=wx.ALL|wx.ALIGN_CENTER_VERTICAL,
+                  border=R.Value.BORDER)
+        hbox1.Add(self.txtOdbc, 1, wx.EXPAND|wx.ALL,
+                  border=R.Value.BORDER)
 
         # query text
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
 
         stQuery = wx.StaticText(panel, label=R.String.QUERY_LABEL)
         stQuery.SetFont(font)
-        hbox2.Add(stQuery, 0)
 
         self.txtQuery = SqlEditor(panel, font, value=R.String.DEF_QUERY)
-        hbox2.Add(self.txtQuery, 1, wx.EXPAND|wx.LEFT|wx.RIGHT,
-                  border=R.Value.BORDER)
 
         btnExecute = wx.Button(panel, R.Id.ID_EXECUTE, label=R.String.EXECUTE)
         btnExecute.SetFont(font)
 
-        hbox2.Add(btnExecute, 0, wx.RIGHT)
-
-        vbox.Add(hbox2, 0, wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP,
-                 border=R.Value.BORDER)
+        hbox2.Add(stQuery, flag=wx.ALL, border=R.Value.BORDER)
+        hbox2.Add(self.txtQuery, 1, wx.EXPAND|wx.ALL,
+                  border=R.Value.BORDER)
+        hbox2.Add(btnExecute, 0, wx.ALL, border=R.Value.BORDER)
 
         # grid
         self.grid = DataGrid(panel)
-        vbox.Add(self.grid, 1, wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP,
-                 border=R.Value.BORDER)
+        self.grid.SetFont(font)
+
+        vbox.Add(hbox1, 0, flag=wx.EXPAND|wx.ALL, border=R.Value.BORDER)
+        vbox.Add(hbox2, 0, wx.EXPAND|wx.ALL, border=R.Value.BORDER)
+
+        vbox.Add(self.grid, 1, wx.EXPAND|wx.ALL, border=R.Value.BORDER*2)
 
         panel.SetSizer(vbox)
 
