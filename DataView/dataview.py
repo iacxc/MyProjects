@@ -1,61 +1,14 @@
 #!/usr/bin/python -O
 
 
-import pypyodbc
 import time
+import csv
+import pypyodbc
 
 import wx
 import wx.stc as stc
-import wx.grid
 
 import resource as R
-
-class DataTable(wx.grid.PyGridTableBase):
-    def __init__(self, data, colLabels=None, rowLabels=None):
-        super(DataTable, self).__init__()
-
-        self.data = data
-        self.colLabels = colLabels
-
-
-    def GetNumberRows(self):
-        return len(self.data) 
-
-
-    def GetNumberCols(self):
-        return len(self.data[0])
-
-
-    def GetColLabelValue(self, col):
-        return self.colLabels[col] if self.colLabels else col
-            
-
-    def GetRowLabelValue(self, row):
-        return row
-
-
-    def IsEmptyCell(self, row, col):
-        return False
-
-
-    def GetValue(self, row, col):
-        return self.data[row][col]
-
-
-    def SetValue(self, row, col, value):
-        pass
-
-
-class DataGrid(wx.grid.Grid):
-    def __init__(self, parent):
-        super(DataGrid, self).__init__(parent)
-
-        tableBase = DataTable(((1,2,3,4,5),))
-        self.SetTable(tableBase)
-
-    def set_value(self, data, colLabels):
-        tableBase = DataTable(data, colLabels)
-        self.SetTable(tableBase)
 
 
 class SqlEditor(stc.StyledTextCtrl):
@@ -104,6 +57,34 @@ class SqlEditor(stc.StyledTextCtrl):
         self.StyleSetSpec(stc.STC_SQL_OPERATOR, "bold," + fonts)
 
 
+class DataListCtrl(wx.ListCtrl):
+    def __init__(self, parent):
+        super(DataListCtrl, self).__init__(parent, style=wx.LC_REPORT)
+
+
+    def RefreshData(self, titles, rows):
+        self.ClearAll()
+
+        for index, title in enumerate(titles):
+            self.InsertColumn(index, title)
+
+        for row in rows:
+            self.Append(row)
+
+
+    def SaveTo(self, path):
+        with file(path, "wb") as csvfile:
+            writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+
+            colcount = self.GetColumnCount()
+
+            for rindex in range(self.GetItemCount()):
+                row = [self.GetItemText(rindex, cindex).encode("utf-8")
+                                      for cindex in range(colcount)]
+
+                writer.writerow(row)
+
+
 class DataFrame(wx.Frame):
     default_connstr = 'DSN=bronto10;UID=seapilot;PWD=seapilot1'
     def __init__(self, parent, ID, title, size=(1200,800)):
@@ -111,6 +92,9 @@ class DataFrame(wx.Frame):
 
         self.initUI()
         self.SetInitialSize()
+
+        self.Bind(wx.EVT_BUTTON, self.OnExecute, id=R.Id.ID_EXECUTE)
+        self.Bind(wx.EVT_BUTTON, self.OnExport, id=R.Id.ID_EXPORT)
 
 
     def initUI(self):
@@ -120,10 +104,12 @@ class DataFrame(wx.Frame):
                        wx.FONTWEIGHT_NORMAL)
 
         panel = wx.Panel(self)
-        vbox = wx.BoxSizer(wx.VERTICAL)
+        #main sizer
+        msizer = wx.BoxSizer(wx.VERTICAL)
 
-        hbox1 = wx.BoxSizer(wx.HORIZONTAL)
         # connection string
+        hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+
         stOdbc = wx.StaticText(panel, label=R.String.CONNSTR_LABEL)
         stOdbc.SetFont(font)
 
@@ -143,32 +129,37 @@ class DataFrame(wx.Frame):
 
         self.txtQuery = SqlEditor(panel, font, value=R.String.DEF_QUERY)
 
+        #buttons
+        btnsizer = wx.BoxSizer(wx.VERTICAL)
         btnExecute = wx.Button(panel, R.Id.ID_EXECUTE, label=R.String.EXECUTE)
         btnExecute.SetFont(font)
+
+        btnExport = wx.Button(panel, R.Id.ID_EXPORT, label=R.String.EXPORT)
+        btnExport.SetFont(font)
+
+        btnsizer.Add(btnExecute, 0, wx.ALL, border=R.Value.BORDER)
+        btnsizer.Add(btnExport,  0, wx.ALL, border=R.Value.BORDER)
 
         hbox2.Add(stQuery, flag=wx.ALL, border=R.Value.BORDER)
         hbox2.Add(self.txtQuery, 1, wx.EXPAND|wx.ALL,
                   border=R.Value.BORDER)
-        hbox2.Add(btnExecute, 0, wx.ALL, border=R.Value.BORDER)
+        hbox2.Add(btnsizer)
 
         # grid
-        self.grid = DataGrid(panel)
-        self.grid.SetFont(font)
+        self.lstData = DataListCtrl(panel)
 
-        vbox.Add(hbox1, 0, flag=wx.EXPAND|wx.ALL, border=R.Value.BORDER)
-        vbox.Add(hbox2, 0, wx.EXPAND|wx.ALL, border=R.Value.BORDER)
+        msizer.Add(hbox1, 0, flag=wx.EXPAND|wx.ALL, border=R.Value.BORDER)
+        msizer.Add(hbox2, 0, wx.EXPAND|wx.ALL, border=R.Value.BORDER)
 
-        vbox.Add(self.grid, 1, wx.EXPAND|wx.ALL, border=R.Value.BORDER*2)
+        msizer.Add(self.lstData, 1, wx.EXPAND|wx.ALL, border=R.Value.BORDER*2)
 
-        panel.SetSizer(vbox)
+        panel.SetSizer(msizer)
 
         # status bar
         statusbar = self.CreateStatusBar()
         statusbar.SetFont(font)
         statusbar.SetFieldsCount(2)
         statusbar.SetStatusWidths([-4, -1])
-
-        self.Bind(wx.EVT_BUTTON, self.OnExecute, id=R.Id.ID_EXECUTE)
 
 
     def OnExecute(self, event):
@@ -189,10 +180,26 @@ class DataFrame(wx.Frame):
                                      cursor.rowcount, now - start_ts), 
                         1) 
 
-        self.grid.set_value(cursor.fetchall(), 
-                            [ fd[0] for fd in cursor.description ])
+        self.lstData.RefreshData([ fd[0] for fd in cursor.description ],
+                                  cursor.fetchall(),)
 
         conn.close() 
+
+
+    def OnExport(self, event):
+        dlg = wx.FileDialog(self, message="Export",
+                            wildcard="*.csv",
+                            style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+
+        if dlg.ShowModal() ==  wx.ID_OK:
+            path = dlg.GetPath()
+            try:
+                self.lstData.SaveTo(path)
+            except Exception as exp:
+                wx.MessageBox(exp.message + ",\nExport failed",
+                              R.String.TITLE_FAILURE)
+
+        dlg.Destroy()
 
 class MainApp(wx.App):
 
