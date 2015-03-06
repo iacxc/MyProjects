@@ -5,48 +5,15 @@ import wx
 
 import DBUtil
 import resource as R
+import Singleton
 from controls import DataListCtrl, ProdDlg
 
 
-class MainFrame(wx.Frame):
-    def __init__(self, parent=None, title=""):
-        super(MainFrame, self).__init__(parent, -1, title, size=(600, 300))
-
-        menu = wx.Menu()
-        menu.Append(R.Id.ID_CATALOG, R.String.MENU_CATALOG)
-        menu.AppendSeparator()
-        menu.Append(wx.ID_EXIT, R.String.MENU_EXIT)
-
-        menubar = wx.MenuBar()
-        menubar.Append(menu, R.String.MENU_TOOL)
-
-        self.SetMenuBar(menubar)
-
-        self.__frmcatalog = CatalogFrame(self)
-
-        self.Bind(wx.EVT_MENU, self.OnCatalog, id=R.Id.ID_CATALOG)
-        self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
-
-
-    def OnCatalog(self, event):
-        self.__frmcatalog.Show()
-
-
-    def OnExit(self, event):
-        self.Close(True)
-
-
 class CatalogFrame(wx.Frame):
+    __metaclass__ = Singleton.Singleton
     tablename = 'T_CATALOG'
-    def __init__(self, parent=None, title=R.String.TITLE_CATALOG):
-        super(CatalogFrame, self).__init__(parent,
-                                           title=title,
-                                           size=(600, 400))
-        self.initUI()
-        self.refreshData()
 
-
-    def initUI(self):
+    def SetupWindow(self):
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -73,6 +40,8 @@ class CatalogFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnModify, id=R.Id.ID_MODIFY)
         self.Bind(wx.EVT_BUTTON, self.OnImport, id=R.Id.ID_IMPORT)
         self.Bind(wx.EVT_BUTTON, self.OnExport, id=R.Id.ID_EXPORT)
+
+        self.refreshData()
 
 
     def refreshData(self):
@@ -163,6 +132,34 @@ class CatalogFrame(wx.Frame):
                               R.String.TITLE_FAILURE)
 
         dlg.Destroy()
+
+
+class MainFrame(wx.Frame):
+    def __init__(self, parent=None, title=""):
+        super(MainFrame, self).__init__(parent, -1, title, size=(600, 300))
+
+        menu = wx.Menu()
+        menu.Append(R.Id.ID_CATALOG, R.String.MENU_CATALOG)
+        menu.AppendSeparator()
+        menu.Append(wx.ID_EXIT, R.String.MENU_EXIT)
+
+        menubar = wx.MenuBar()
+        menubar.Append(menu, R.String.MENU_TOOL)
+
+        self.SetMenuBar(menubar)
+
+        self.__frmcatalog = CatalogFrame(self, title=R.String.TITLE_CATALOG)
+
+        self.Bind(wx.EVT_MENU, self.OnCatalog, id=R.Id.ID_CATALOG)
+        self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
+
+
+    def OnCatalog(self, event):
+        self.__frmcatalog.Show()
+
+
+    def OnExit(self, event):
+        self.Close(True)
 
 
 class MainApp(wx.App):

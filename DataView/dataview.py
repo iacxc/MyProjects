@@ -2,95 +2,21 @@
 
 
 import time
-import csv
 import pypyodbc
 
 import wx
-import wx.stc as stc
 
 import resource as R
 
+from Controls import SqlEditor, DataListCtrl
 
-class SqlEditor(stc.StyledTextCtrl):
-    def __init__(self, parent, font, value=None):
-        super(SqlEditor, self).__init__(parent, size=(300, 180))
-
-        self.__font = font
-
-        self.SetLexer(stc.STC_LEX_SQL)
-        self.SetKeyWords(0,
-            " ".join(['select', 'from', 'insert', 'at', 'epoch', 'latest',
-                       'limit', 'order', 'group', 'by']))
-
-        self.SetupStyles()
-        self.EnableLineNumber()
-
-        if value:
-            self.SetText(value)
-
-
-    def EnableLineNumber(self):
-        #enable line number margin
-        self.SetMarginType(1, stc.STC_MARGIN_NUMBER)
-        self.SetMarginMask(1,0)
-        self.SetMarginWidth(1, 25)
- 
-
-    def SetupStyles(self):
-        face = self.__font.GetFaceName()
-        size = self.__font.GetPointSize()
-
-        fonts = "face:%s,size:%d" % (face, size)
-        default = "fore:#000000," + fonts
-        self.StyleSetSpec(stc.STC_STYLE_DEFAULT, default)
-
-        line = "back:#C0C0C0," + fonts
-        self.StyleSetSpec(stc.STC_STYLE_LINENUMBER, line)
-        self.StyleSetSpec(stc.STC_STYLE_CONTROLCHAR, "face:%s" % face)
-
-        self.StyleSetSpec(stc.STC_SQL_DEFAULT, default)
-
-        self.StyleSetSpec(stc.STC_SQL_COMMENT, "fore:#007F00," + fonts)
-        self.StyleSetSpec(stc.STC_SQL_NUMBER, "fore:#007F7F," + fonts)
-        self.StyleSetSpec(stc.STC_SQL_STRING, "fore:#7F007F," + fonts)
-        self.StyleSetSpec(stc.STC_SQL_WORD, "fore:#7F0000,bold," + fonts)
-        self.StyleSetSpec(stc.STC_SQL_OPERATOR, "bold," + fonts)
-
-
-class DataListCtrl(wx.ListCtrl):
-    def __init__(self, parent):
-        super(DataListCtrl, self).__init__(parent, style=wx.LC_REPORT)
-
-
-    def RefreshData(self, titles, rows):
-        self.ClearAll()
-
-        for index, title in enumerate(titles):
-            self.InsertColumn(index, title)
-
-        for row in rows:
-            self.Append(row)
-
-
-    def SaveTo(self, path):
-        with file(path, "wb") as csvfile:
-            writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-
-            colcount = self.GetColumnCount()
-
-            for rindex in range(self.GetItemCount()):
-                row = [self.GetItemText(rindex, cindex).encode("utf-8")
-                                      for cindex in range(colcount)]
-
-                writer.writerow(row)
-
-
-class DataFrame(wx.Frame):
+class DataFrame(wx.MDIChildFrame):
     default_connstr = 'DSN=bronto10;UID=seapilot;PWD=seapilot1'
-    def __init__(self, parent, ID, title, size=(1200,800)):
-        super(DataFrame, self).__init__(parent, ID, title, size=size) 
+    def __init__(self, parent, title):
+        wx.MDIChildFrame.__init__(self, parent, title=title)
 
         self.initUI()
+
         self.SetInitialSize()
 
         self.Bind(wx.EVT_BUTTON, self.OnExecute, id=R.Id.ID_EXECUTE)
@@ -145,7 +71,7 @@ class DataFrame(wx.Frame):
                   border=R.Value.BORDER)
         hbox2.Add(btnsizer)
 
-        # grid
+        # data list
         self.lstData = DataListCtrl(panel)
 
         msizer.Add(hbox1, 0, flag=wx.EXPAND|wx.ALL, border=R.Value.BORDER)
@@ -159,7 +85,7 @@ class DataFrame(wx.Frame):
         statusbar = self.CreateStatusBar()
         statusbar.SetFont(font)
         statusbar.SetFieldsCount(2)
-        statusbar.SetStatusWidths([-4, -1])
+        statusbar.SetStatusWidths([-1, 300])
 
 
     def OnExecute(self, event):
@@ -201,10 +127,46 @@ class DataFrame(wx.Frame):
 
         dlg.Destroy()
 
+
+class MainFrame(wx.MDIParentFrame):
+    def __init__(self, parent=None, title="", size=(1200,800)):
+        super(MainFrame, self).__init__(parent, title=title, size=size)
+
+        self.__index = 0
+        self.initUI()
+        self.Center()
+
+        self.Bind(wx.EVT_MENU, self.OnMenuClick)
+
+
+    def initUI(self):
+        menu = wx.Menu()
+        menu.Append(R.Id.ID_DATAVIEW, R.String.MENU_DATAVIEW)
+        menu.AppendSeparator()
+        menu.Append(wx.ID_EXIT, R.String.MENU_EXIT)
+
+        menubar = wx.MenuBar()
+        menubar.Append(menu, R.String.MENU_TOOL)
+
+        self.SetMenuBar(menubar)
+
+
+    def OnMenuClick(self, event):
+        event_id = event.GetId()
+        if event_id == wx.ID_EXIT:
+            self.Close(True)
+        elif event_id == R.Id.ID_DATAVIEW:
+            frame = DataFrame(self,
+                              R.String.TITLE_DATAVIEW + ' {0}'.format(
+                                   self.__index))
+            self.__index += 1
+            frame.Show()
+
+
 class MainApp(wx.App):
 
     def OnInit(self):
-        self.frame = DataFrame(parent=None, ID=-1, title='Data Viewer')
+        self.frame = MainFrame(title=R.String.TITLE_DATAVIEW)
         self.frame.Show()
 
         return True
