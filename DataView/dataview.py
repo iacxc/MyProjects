@@ -138,7 +138,7 @@ class DataFrame(wx.Frame):
         btnExport.SetFont(font)
 
         btnsizer.Add(btnExecute, 0, wx.ALL, border=R.Value.BORDER)
-        btnsizer.Add(btnExport,  0, wx.ALL, border=R.Value.BORDER)
+        btnsizer.Add(btnExport,  0, wx.ALL|wx.EXPAND, border=R.Value.BORDER)
 
         hbox2.Add(stQuery, flag=wx.ALL, border=R.Value.BORDER)
         hbox2.Add(self.txtQuery, 1, wx.EXPAND|wx.ALL,
