@@ -7,10 +7,8 @@ import wx.stc as stc
 
 
 class SqlEditor(stc.StyledTextCtrl):
-    def __init__(self, parent, font, value=None):
+    def __init__(self, parent, value=None):
         super(SqlEditor, self).__init__(parent, size=(300, 180))
-
-        self.__font = font
 
         self.SetLexer(stc.STC_LEX_SQL)
         self.SetKeyWords(0,
@@ -32,24 +30,20 @@ class SqlEditor(stc.StyledTextCtrl):
 
 
     def SetupStyles(self):
-        face = self.__font.GetFaceName()
-        size = self.__font.GetPointSize()
 
-        fonts = "face:%s,size:%d" % (face, size)
-        default = "fore:#000000," + fonts
+        default = "fore:#000000"
         self.StyleSetSpec(stc.STC_STYLE_DEFAULT, default)
 
-        line = "back:#C0C0C0," + fonts
+        line = "back:#C0C0C0"
         self.StyleSetSpec(stc.STC_STYLE_LINENUMBER, line)
-        self.StyleSetSpec(stc.STC_STYLE_CONTROLCHAR, "face:%s" % face)
 
         self.StyleSetSpec(stc.STC_SQL_DEFAULT, default)
 
-        self.StyleSetSpec(stc.STC_SQL_COMMENT, "fore:#007F00," + fonts)
-        self.StyleSetSpec(stc.STC_SQL_NUMBER, "fore:#007F7F," + fonts)
-        self.StyleSetSpec(stc.STC_SQL_STRING, "fore:#7F007F," + fonts)
-        self.StyleSetSpec(stc.STC_SQL_WORD, "fore:#7F0000,bold," + fonts)
-        self.StyleSetSpec(stc.STC_SQL_OPERATOR, "bold," + fonts)
+        self.StyleSetSpec(stc.STC_SQL_COMMENT, "fore:#007F00")
+        self.StyleSetSpec(stc.STC_SQL_NUMBER, "fore:#007F7F")
+        self.StyleSetSpec(stc.STC_SQL_STRING, "fore:#7F007F")
+        self.StyleSetSpec(stc.STC_SQL_WORD, "fore:#7F0000,bold")
+        self.StyleSetSpec(stc.STC_SQL_OPERATOR, "bold")
 
 
 class DataListCtrl(wx.ListCtrl):
@@ -156,6 +150,7 @@ class  ProgressStatusBar(wx.StatusBar):
     def SetRange(self, val):
         if val != self.prog.GetRange():
             self.prog.SetRange(val)
+
 
     def StartBusy(self, rate=100):
         self.busy = True

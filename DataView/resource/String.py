@@ -12,6 +12,7 @@ QUERY_LABEL = 'Query Text:'
 EXECUTE = 'Execute'
 EXPORT = 'Export'
 
+DEF_CONNSTR = 'DSN=bronto10;UID=seapilot;PWD=seapilot1'
 DEF_QUERY = """at epoch latest
 select * from metric_topn_cpu
 order by gen_utc_ts desc
