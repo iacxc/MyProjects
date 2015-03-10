@@ -48,10 +48,10 @@ class DataFrame(wx.MDIChildFrame):
         panel = wx.Panel(self)
 
         self.txtOdbc = wx.TextCtrl(panel, value=R.String.DEF_CONNSTR)
-        self.lstData = DataListCtrl(panel)
         self.txtQuery = SqlEditor(panel, value=R.String.DEF_QUERY)
         self.btnExecute = wx.Button(panel, label=R.String.EXECUTE)
         self.btnExport = wx.Button(panel, label=R.String.EXPORT)
+        self.lstData = DataListCtrl(panel)
 
         #main sizer
         msizer = wx.BoxSizer(wx.VERTICAL)
@@ -77,15 +77,6 @@ class DataFrame(wx.MDIChildFrame):
         btnsizer.Add(self.btnExecute, 0, wx.ALL, border=R.Value.BORDER)
         btnsizer.Add(self.btnExport,  0, wx.ALL, border=R.Value.BORDER)
 
-<<<<<<< HEAD
-        btnsizer.Add(btnExecute, 0, wx.ALL, border=R.Value.BORDER)
-        btnsizer.Add(btnExport,  0, wx.ALL|wx.EXPAND, border=R.Value.BORDER)
-
-        hbox2.Add(stQuery, flag=wx.ALL, border=R.Value.BORDER)
-        hbox2.Add(self.txtQuery, 1, wx.EXPAND|wx.ALL,
-                  border=R.Value.BORDER)
-=======
->>>>>>> 8b39883816a3bc59cf3241d90f859359e01d8f34
         hbox2.Add(btnsizer)
 
         msizer.Add(hbox1, 0, flag=wx.EXPAND|wx.ALL, border=R.Value.BORDER)
