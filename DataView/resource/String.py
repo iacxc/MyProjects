@@ -9,6 +9,9 @@ TITLE_DATAVIEW = 'Data Viewer'
 
 CONNSTR_LABEL = 'Connection String:'
 QUERY_LABEL = 'Query Text:'
+
+SAVE = 'Save'
+OPEN = 'Open'
 EXECUTE = 'Execute'
 EXPORT = 'Export'
 

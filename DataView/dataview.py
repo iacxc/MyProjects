@@ -22,16 +22,17 @@ class DataThread(threading.Thread):
     def run(self):
 
         start_ts = time.time()
-        wx.CallAfter(self.window.UpdateStatus, 'Connecting...')
+        wx.CallAfter(self.window.UpdateStatus, "Connecting...")
 
         conn = DBUtil.connect(self.__conn_str)
-        wx.CallAfter(self.window.UpdateStatus, 'Querying...')
+        wx.CallAfter(self.window.UpdateStatus, "Querying...")
 
         desc, rows = DBUtil.fetch_table(conn, self.__query_str)
-        wx.CallAfter(self.window.UpdateStatus, 'Done')
+        wx.CallAfter(self.window.UpdateStatus, "Done")
 
         end_ts = time.time()
         wx.CallAfter(self.window.StopQuery, desc, rows, end_ts - start_ts)
+
 
 
 class DataFrame(wx.MDIChildFrame):
@@ -40,6 +41,8 @@ class DataFrame(wx.MDIChildFrame):
 
         self.initUI()
 
+        self.Bind(wx.EVT_BUTTON, self.OnOpen, self.btnOpen)
+        self.Bind(wx.EVT_BUTTON, self.OnSave, self.btnSave)
         self.Bind(wx.EVT_BUTTON, self.OnExecute, self.btnExecute)
         self.Bind(wx.EVT_BUTTON, self.OnExport, self.btnExport)
 
@@ -50,6 +53,8 @@ class DataFrame(wx.MDIChildFrame):
         self.txtOdbc = wx.TextCtrl(panel, value=R.String.DEF_CONNSTR)
         self.txtQuery = SqlEditor(panel, value=R.String.DEF_QUERY)
         self.btnExecute = wx.Button(panel, label=R.String.EXECUTE)
+        self.btnOpen = wx.Button(panel, label=R.String.OPEN)
+        self.btnSave = wx.Button(panel, label=R.String.SAVE)
         self.btnExport = wx.Button(panel, label=R.String.EXPORT)
         self.lstData = DataListCtrl(panel)
 
@@ -74,6 +79,8 @@ class DataFrame(wx.MDIChildFrame):
         #buttons
         btnsizer = wx.BoxSizer(wx.VERTICAL)
 
+        btnsizer.Add(self.btnOpen, 0, wx.ALL, border=R.Value.BORDER)
+        btnsizer.Add(self.btnSave, 0, wx.ALL, border=R.Value.BORDER)
         btnsizer.Add(self.btnExecute, 0, wx.ALL, border=R.Value.BORDER)
         btnsizer.Add(self.btnExport,  0, wx.ALL, border=R.Value.BORDER)
 
@@ -91,6 +98,32 @@ class DataFrame(wx.MDIChildFrame):
         self.SetStatusBar(self.statusbar)
 
 
+    def OnOpen(self, event):
+        dlg = wx.FileDialog(self, message=R.String.OPEN,
+                            wildcard="*.sql",
+                            style=wx.FD_OPEN)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+            with file(path, "r") as sqlfile:
+                self.txtQuery.SetText(sqlfile.read())
+
+        dlg.Destroy()
+
+
+    def OnSave(self, event):
+        dlg = wx.FileDialog(self, message=R.String.SAVE,
+                            wildcard="*.sql",
+                            style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+            with file(path, "w") as sqlfile:
+                sqlfile.write(self.txtQuery.GetText())
+
+        dlg.Destroy()
+
+
     def OnExecute(self, event):
         self.StartQuery()
         task = DataThread(self.txtOdbc.GetValue(),
@@ -100,7 +133,7 @@ class DataFrame(wx.MDIChildFrame):
 
 
     def OnExport(self, event):
-        dlg = wx.FileDialog(self, message="Export",
+        dlg = wx.FileDialog(self, message=R.String.EXPORT,
                             wildcard="*.csv",
                             style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
@@ -120,7 +153,6 @@ class DataFrame(wx.MDIChildFrame):
 
 
     def StartQuery(self):
-#        self.PushStatusText('Connecting...', 0)
         self.statusbar.StartBusy()
         self.btnExecute.Disable()
         self.btnExport.Disable()
@@ -128,7 +160,7 @@ class DataFrame(wx.MDIChildFrame):
 
     def StopQuery(self, desc, rows, elapsed):
         self.lstData.RefreshData(desc, rows)
-        self.PushStatusText('{0} rows got, {1:.0f} seconds elapsed'.format(
+        self.PushStatusText("{0} rows got, {1:.0f} seconds elapsed".format(
                                      len(rows), elapsed),
                         1)
 
@@ -166,7 +198,7 @@ class MainFrame(wx.MDIParentFrame):
             self.Close(True)
         elif event_id == R.Id.ID_DATAVIEW:
             frame = DataFrame(self,
-                              R.String.TITLE_DATAVIEW + ' {0}'.format(
+                              R.String.TITLE_DATAVIEW + " {0}".format(
                                    self.__index))
             self.__index += 1
             frame.Show()
@@ -181,6 +213,6 @@ class MainApp(wx.App):
         return True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = MainApp()
     app.MainLoop()
