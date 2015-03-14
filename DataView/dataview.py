@@ -6,8 +6,15 @@ import wx
 import threading
 
 import resource as R
-from Controls import SqlEditor, DataListCtrl, ProgressStatusBar
+from Controls import SqlEditor, DataGrid, ProgressStatusBar
 import DBUtil
+
+
+# utilities
+def CreateButton(parent, label, handler):
+    button = wx.Button(parent, label=label)
+    button.Bind(wx.EVT_BUTTON, handler)
+    return button
 
 
 class DataThread(threading.Thread):
@@ -34,17 +41,11 @@ class DataThread(threading.Thread):
         wx.CallAfter(self.window.StopQuery, desc, rows, end_ts - start_ts)
 
 
-
 class DataFrame(wx.MDIChildFrame):
     def __init__(self, parent, title):
         wx.MDIChildFrame.__init__(self, parent, title=title)
 
         self.initUI()
-
-        self.Bind(wx.EVT_BUTTON, self.OnOpen, self.btnOpen)
-        self.Bind(wx.EVT_BUTTON, self.OnSave, self.btnSave)
-        self.Bind(wx.EVT_BUTTON, self.OnExecute, self.btnExecute)
-        self.Bind(wx.EVT_BUTTON, self.OnExport, self.btnExport)
 
 
     def initUI(self):
@@ -52,11 +53,11 @@ class DataFrame(wx.MDIChildFrame):
 
         self.txtOdbc = wx.TextCtrl(panel, value=R.String.DEF_CONNSTR)
         self.txtQuery = SqlEditor(panel, value=R.String.DEF_QUERY)
-        self.btnExecute = wx.Button(panel, label=R.String.EXECUTE)
-        self.btnOpen = wx.Button(panel, label=R.String.OPEN)
-        self.btnSave = wx.Button(panel, label=R.String.SAVE)
-        self.btnExport = wx.Button(panel, label=R.String.EXPORT)
-        self.lstData = DataListCtrl(panel)
+        btnOpen = CreateButton(panel, R.String.OPEN, self.OnBtnOpen)
+        btnSave = CreateButton(panel, R.String.SAVE, self.OnBtnSave)
+        self.btnRun = CreateButton(panel, R.String.RUN,  self.OnBtnRun)
+        self.btnExport = CreateButton(panel, R.String.EXPORT, self.OnBtnExport)
+        self.gridData = DataGrid(panel)
 
         #main sizer
         msizer = wx.BoxSizer(wx.VERTICAL)
@@ -67,8 +68,7 @@ class DataFrame(wx.MDIChildFrame):
         hbox1.Add(wx.StaticText(panel, label=R.String.CONNSTR_LABEL),
                   flag=wx.ALL|wx.ALIGN_CENTER_VERTICAL,
                   border=R.Value.BORDER)
-        hbox1.Add(self.txtOdbc, 1, wx.EXPAND|wx.ALL,
-                  border=R.Value.BORDER)
+        hbox1.Add(self.txtOdbc, 1, wx.EXPAND|wx.ALL, border=R.Value.BORDER)
 
         # query text
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
@@ -79,17 +79,23 @@ class DataFrame(wx.MDIChildFrame):
         #buttons
         btnsizer = wx.BoxSizer(wx.VERTICAL)
 
-        btnsizer.Add(self.btnOpen, 0, wx.ALL, border=R.Value.BORDER)
-        btnsizer.Add(self.btnSave, 0, wx.ALL, border=R.Value.BORDER)
-        btnsizer.Add(self.btnExecute, 0, wx.ALL, border=R.Value.BORDER)
-        btnsizer.Add(self.btnExport,  0, wx.ALL, border=R.Value.BORDER)
+        btnsizer.Add(btnOpen, 0, wx.ALL, border=R.Value.BORDER)
+        btnsizer.Add(btnSave, 0, wx.ALL, border=R.Value.BORDER)
+        btnsizer.Add(self.btnRun, 0, wx.ALL, border=R.Value.BORDER)
+        btnsizer.Add(self.btnExport, 0, wx.ALL, border=R.Value.BORDER)
 
         hbox2.Add(btnsizer)
 
-        msizer.Add(hbox1, 0, flag=wx.EXPAND|wx.ALL, border=R.Value.BORDER)
-        msizer.Add(hbox2, 0, wx.EXPAND|wx.ALL, border=R.Value.BORDER)
+        gridbox = wx.StaticBoxSizer(wx.StaticBox(panel,
+                                                 label=R.String.DATA_LABEL))
+        gridbox.Add(self.gridData, 1, wx.EXPAND)
 
-        msizer.Add(self.lstData, 1, wx.EXPAND|wx.ALL, border=R.Value.BORDER*2)
+        msizer.Add(hbox1, 0, flag=wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT,
+                   border=R.Value.BORDER)
+        msizer.Add(hbox2, 0, wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT,
+                   border=R.Value.BORDER)
+        msizer.Add(gridbox, 1, wx.EXPAND|wx.ALL,
+                   border=R.Value.BORDER)
 
         panel.SetSizer(msizer)
 
@@ -98,7 +104,7 @@ class DataFrame(wx.MDIChildFrame):
         self.SetStatusBar(self.statusbar)
 
 
-    def OnOpen(self, event):
+    def OnBtnOpen(self, event):
         dlg = wx.FileDialog(self, message=R.String.OPEN,
                             wildcard="*.sql",
                             style=wx.FD_OPEN)
@@ -111,7 +117,7 @@ class DataFrame(wx.MDIChildFrame):
         dlg.Destroy()
 
 
-    def OnSave(self, event):
+    def OnBtnSave(self, event):
         dlg = wx.FileDialog(self, message=R.String.SAVE,
                             wildcard="*.sql",
                             style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
@@ -124,15 +130,14 @@ class DataFrame(wx.MDIChildFrame):
         dlg.Destroy()
 
 
-    def OnExecute(self, event):
+    def OnBtnRun(self, event):
         self.StartQuery()
-        task = DataThread(self.txtOdbc.GetValue(),
-                          self.txtQuery.GetText(),
+        task = DataThread(self.txtOdbc.GetValue(), self.txtQuery.GetText(),
                           self)
         task.start()
 
 
-    def OnExport(self, event):
+    def OnBtnExport(self, event):
         dlg = wx.FileDialog(self, message=R.String.EXPORT,
                             wildcard="*.csv",
                             style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
@@ -140,7 +145,7 @@ class DataFrame(wx.MDIChildFrame):
         if dlg.ShowModal() ==  wx.ID_OK:
             path = dlg.GetPath()
             try:
-                self.lstData.SaveTo(path)
+                self.gridData.SaveTo(path)
             except Exception as exp:
                 wx.MessageBox(exp.message + ",\nExport failed",
                               R.String.TITLE_FAILURE)
@@ -149,23 +154,23 @@ class DataFrame(wx.MDIChildFrame):
 
 
     def UpdateStatus(self, msg):
-        self.PushStatusText(msg, 0)
+        self.statusbar.SetStatusText(msg)
 
 
     def StartQuery(self):
         self.statusbar.StartBusy()
-        self.btnExecute.Disable()
+        self.btnRun.Disable()
         self.btnExport.Disable()
 
 
     def StopQuery(self, desc, rows, elapsed):
-        self.lstData.RefreshData(desc, rows)
-        self.PushStatusText("{0} rows got, {1:.0f} seconds elapsed".format(
-                                     len(rows), elapsed),
-                        1)
+        self.gridData.RefreshData(desc, rows)
+
+        msg = "%d rows got, %.0f seconds elapsed" % (len(rows), elapsed)
+        self.statusbar.SetStatusText(msg, 1)
 
         self.statusbar.StopBusy()
-        self.btnExecute.Enable()
+        self.btnRun.Enable()
         self.btnExport.Enable()
 
 

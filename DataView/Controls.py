@@ -3,17 +3,19 @@
 import csv
 
 import wx
-import wx.stc as stc
+import wx.grid
+import wx.stc
 
 
-class SqlEditor(stc.StyledTextCtrl):
+class SqlEditor(wx.stc.StyledTextCtrl):
     def __init__(self, parent, value=None):
         super(SqlEditor, self).__init__(parent, size=(300, 180))
 
-        self.SetLexer(stc.STC_LEX_SQL)
+        self.SetLexer(wx.stc.STC_LEX_SQL)
         self.SetKeyWords(0,
-            " ".join(['select', 'from', 'insert', 'at', 'epoch', 'latest',
-                       'limit', 'order', 'group', 'by']))
+            " ".join(['at', 'epoch', 'latest',
+                      'select', 'from', 'insert', 'where',
+                      'limit', 'order', 'group', 'by']))
 
         self.SetupStyles()
         self.EnableLineNumber()
@@ -24,7 +26,7 @@ class SqlEditor(stc.StyledTextCtrl):
 
     def EnableLineNumber(self):
         #enable line number margin
-        self.SetMarginType(1, stc.STC_MARGIN_NUMBER)
+        self.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
         self.SetMarginMask(1,0)
         self.SetMarginWidth(1, 25)
 
@@ -32,23 +34,24 @@ class SqlEditor(stc.StyledTextCtrl):
     def SetupStyles(self):
 
         default = "fore:#000000"
-        self.StyleSetSpec(stc.STC_STYLE_DEFAULT, default)
+        self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT, default)
 
         line = "back:#C0C0C0"
-        self.StyleSetSpec(stc.STC_STYLE_LINENUMBER, line)
+        self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER, line)
 
-        self.StyleSetSpec(stc.STC_SQL_DEFAULT, default)
+        self.StyleSetSpec(wx.stc.STC_SQL_DEFAULT, default)
 
-        self.StyleSetSpec(stc.STC_SQL_COMMENT, "fore:#007F00")
-        self.StyleSetSpec(stc.STC_SQL_NUMBER, "fore:#007F7F")
-        self.StyleSetSpec(stc.STC_SQL_STRING, "fore:#7F007F")
-        self.StyleSetSpec(stc.STC_SQL_WORD, "fore:#7F0000,bold")
-        self.StyleSetSpec(stc.STC_SQL_OPERATOR, "bold")
+        self.StyleSetSpec(wx.stc.STC_SQL_COMMENT, "fore:#007F00")
+        self.StyleSetSpec(wx.stc.STC_SQL_NUMBER, "fore:#007F7F")
+        self.StyleSetSpec(wx.stc.STC_SQL_STRING, "fore:#7F007F")
+        self.StyleSetSpec(wx.stc.STC_SQL_WORD, "fore:#7F0000,bold")
+        self.StyleSetSpec(wx.stc.STC_SQL_OPERATOR, "bold")
 
 
 class DataListCtrl(wx.ListCtrl):
     def __init__(self, parent):
-        wx.ListCtrl.__init__(self, parent, style=wx.LC_REPORT)
+        super(DataListCtrl, self).__init__(parent,
+                             style=wx.LC_REPORT|wx.LC_HRULES|wx.LC_VRULES)
 
 
     def RefreshData(self, titles, rows):
@@ -56,6 +59,8 @@ class DataListCtrl(wx.ListCtrl):
 
         for index, title in enumerate(titles):
             self.InsertColumn(index, title)
+            self.SetColumnWidth(index, wx.LIST_AUTOSIZE_USEHEADER)
+        self.SetColumnWidth(0, 150)
 
         for row in rows:
             self.Append(row)
@@ -69,6 +74,42 @@ class DataListCtrl(wx.ListCtrl):
 
             for rindex in range(self.GetItemCount()):
                 row = [self.GetItemText(rindex, cindex).encode("utf-8")
+                                      for cindex in range(colcount)]
+
+                writer.writerow(row)
+
+
+class DataGrid(wx.grid.Grid):
+    def __init__(self, parent):
+        super(DataGrid, self).__init__(parent)
+        self.CreateGrid(0,0)
+
+
+    def RefreshData(self, titles, rows):
+        self.BeginBatch()
+
+        self.ClearGrid()
+        self.AppendCols(len(titles))
+        for index, title in enumerate(titles):
+            self.SetColLabelValue(index, title)
+
+        self.AppendRows(len(rows))
+        for rindex, row in enumerate(rows):
+            for cindex, value in enumerate(row):
+                self.SetCellValue(rindex, cindex, str(value))
+
+        self.EndBatch()
+        self.ShowRow(0)
+
+
+    def SaveTo(self, path):
+        with file(path, "wb") as csvfile:
+            writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+
+            colcount = self.GetNumberCols()
+
+            for rindex in range(self.GetNumberRows()):
+                row = [self.GetCellValue(rindex, cindex).encode("utf-8")
                                       for cindex in range(colcount)]
 
                 writer.writerow(row)
