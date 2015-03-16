@@ -88,7 +88,10 @@ class DataGrid(wx.grid.Grid):
     def RefreshData(self, titles, rows):
         self.BeginBatch()
 
-        self.ClearGrid()
+        # clear all
+        self.DeleteRows(0, self.GetNumberRows())
+        self.DeleteCols(0, self.GetNumberCols())
+
         self.AppendCols(len(titles))
         for index, title in enumerate(titles):
             self.SetColLabelValue(index, title)
@@ -99,7 +102,7 @@ class DataGrid(wx.grid.Grid):
                 self.SetCellValue(rindex, cindex, str(value))
 
         self.EndBatch()
-        self.ShowRow(0)
+        wx.CallAfter(self.ForceRefresh())
 
 
     def SaveTo(self, path):
