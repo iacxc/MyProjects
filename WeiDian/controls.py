@@ -6,7 +6,7 @@ import wx
 import resource as R
 
 
-class DataListCtrl(wx.ListCtrl):
+class DataListCtrl(wx.ListView):
     def __init__(self, parent):
         super(DataListCtrl, self).__init__(parent, style=wx.LC_REPORT)
 
@@ -64,6 +64,16 @@ class DataListCtrl(wx.ListCtrl):
                                       for cindex in range(colcount)]
 
                 writer.writerow(row)
+
+
+    def Dump(self):
+
+        colcount = self.GetColumnCount()
+        rows = []
+        for rindex in range(self.GetItemCount()):
+            rows.append([self.GetItemText(rindex, cindex).encode("utf-8")
+                              for cindex in range(colcount)])
+        return rows
 
 
 class ProdDlg(wx.Dialog):

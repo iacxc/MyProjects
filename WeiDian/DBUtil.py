@@ -128,3 +128,14 @@ def delete(tablename, keys):
 
     conn.commit()
     conn.close()
+
+
+def dump(path, tablename, rows):
+    conn = connect()
+
+    columns, orderbys = get_table_columns(conn, tablename, hastitle=False)
+    with file(path, "w") as sqlfile:
+        for row in rows:
+            sqlfile.write("INSERT INTO {0} ({1}) VALUES ({2});\n".format(
+                                tablename, ",".join(columns), ",".join(row)))
+

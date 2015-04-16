@@ -45,6 +45,22 @@ SQL_TABLES = [ """CREATE TABLE T_CATALOG(
 , "INSERT INTO T_COLUMNS VALUES ('T_CATALOG', 'prod_id',   1, 1, 'ID')"
 , "INSERT INTO T_COLUMNS VALUES ('T_CATALOG', 'prod_desc', 2, 0, 'Description')"
 , "INSERT INTO T_COLUMNS VALUES ('T_CATALOG', 'barcode',   3, 0, 'BarCode')"
+
+, """CREATE TABLE T_CUSTOMER(
+    cust_id integer not null primary key,
+    name text,
+    cellphone text,
+    weixin text,
+    qq text,
+    other text
+)"""
+, "INSERT INTO T_TABLES VALUES('T_CUSTOMER', 'Customer')"
+, "INSERT INTO T_COLUMNS VALUES('T_CUSTOMER', 'cust_id',   1, 1, 'ID')"
+, "INSERT INTO T_COLUMNS VALUES('T_CUSTOMER', 'name',      2, 0, 'Name')"
+, "INSERT INTO T_COLUMNS VALUES('T_CUSTOMER', 'cellphone', 3, 0, 'Cellphone')"
+, "INSERT INTO T_COLUMNS VALUES('T_CUSTOMER', 'weixin',    4, 0, 'Weixin')"
+, "INSERT INTO T_COLUMNS VALUES('T_CUSTOMER', 'qq',        5, 0, 'QQ')"
+, "INSERT INTO T_COLUMNS VALUES('T_CUSTOMER', 'other',     6, 0, 'Other')"
 ]
 
 def init_metadata(conn):
