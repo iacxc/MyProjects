@@ -85,47 +85,18 @@ def insert(tablename, row):
     conn.close()
 
 
-def update(tablename, keys, values):
+def delete(tablename, row):
     conn = connect()
     cursor = conn.cursor()
 
-    sqlstr = "SELECT name, is_primary FROM T_COLUMNS WHERE " \
-             "tablename=? ORDER BY col_id"
+    columns, orderbys = get_table_columns(conn, tablename, hastitle=False)
 
-    cursor.execute(sqlstr, (tablename,))
-
-    rows = cursor.fetchall()
-    keynames = [row[0] for row in rows if row[1]]
-    valuenames = [row[0] for row in rows if not row[1]]
-
-    where_str = " and ".join(keyname + "=?" for keyname in keynames)
-    values_str = ",".join(valuename + "=?" for valuename in valuenames)
-
-    sqlstr = "UPDATE {0} SET {1} WHERE {2}".format(
-        tablename, values_str, where_str)
-
-    cursor.execute(sqlstr, values + keys)
-
-    conn.commit()
-    conn.close()
-
-
-def delete(tablename, keys):
-    conn = connect()
-    cursor = conn.cursor()
-
-    sqlstr = "SELECT name FROM T_COLUMNS WHERE " \
-             "tablename=? and is_primary = 1 ORDER BY col_id"
-
-    cursor.execute(sqlstr, (tablename,))
-
-    keynames = [row[0] for row in cursor.fetchall()]
-
-    where_str = " and ".join(keyname + "=?" for keyname in keynames)
+    where_str = " and ".join(col + "=?" for col in columns)
     sqlstr = "DELETE FROM {0} WHERE {1}".format(tablename, where_str)
 
-    cursor.execute(sqlstr, keys)
+    cursor.execute(sqlstr, row)
 
+    print sqlstr, row
     conn.commit()
     conn.close()
 

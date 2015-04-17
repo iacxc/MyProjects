@@ -4,13 +4,17 @@ import wx
 
 import DBUtil
 import resource as R
-import Singleton
-from controls import DataListCtrl, ProdDlg
+from controls import DataListCtrl
 
 
-class CatalogFrame(wx.Frame):
-    __metaclass__ = Singleton.Singleton
-    tablename = 'T_CATALOG'
+class DataManFrame(wx.Frame):
+    def __init__(self, parent, title, tablename, dialog):
+        super(DataManFrame, self).__init__(parent, title='DataMan - ' + title)
+        self.tablename = tablename
+        self.dialog = dialog
+
+        self.SetupWindow()
+
 
     def SetupWindow(self):
         panel = wx.Panel(self)
@@ -22,8 +26,6 @@ class CatalogFrame(wx.Frame):
         hbox.AddMany([(wx.Button(panel, R.Id.ID_ADD,    R.String.BTN_ADD),
                             1, wx.EXPAND),
                       (wx.Button(panel, R.Id.ID_DELETE, R.String.BTN_DELETE),
-                            1, wx.EXPAND),
-                      (wx.Button(panel, R.Id.ID_MODIFY, R.String.BTN_MODIFY),
                             1, wx.EXPAND),
                       (wx.Button(panel, R.Id.ID_IMPORT, R.String.BTN_IMPORT),
                             1, wx.EXPAND),
@@ -39,7 +41,6 @@ class CatalogFrame(wx.Frame):
 
         self.Bind(wx.EVT_BUTTON, self.OnAdd, id=R.Id.ID_ADD)
         self.Bind(wx.EVT_BUTTON, self.OnDelete, id=R.Id.ID_DELETE)
-        self.Bind(wx.EVT_BUTTON, self.OnModify, id=R.Id.ID_MODIFY)
         self.Bind(wx.EVT_BUTTON, self.OnImport, id=R.Id.ID_IMPORT)
         self.Bind(wx.EVT_BUTTON, self.OnExport, id=R.Id.ID_EXPORT)
         self.Bind(wx.EVT_BUTTON, self.OnDump, id=R.Id.ID_DUMP)
@@ -53,11 +54,10 @@ class CatalogFrame(wx.Frame):
 
 
     def OnAdd(self, event):
-        dlg = ProdDlg(self)
+        dlg = self.dialog(self)
         if dlg.ShowModal() == wx.ID_OK:
             try:
-                DBUtil.insert(self.tablename,
-                          (dlg.prodid, dlg.proddesc, dlg.barcode))
+                DBUtil.insert(self.tablename, dlg.get_data())
 
                 self.refreshData()
             except Exception as exp:
@@ -68,39 +68,21 @@ class CatalogFrame(wx.Frame):
 
 
     def OnDelete(self, event):
-        prodid, proddesc, barcode = self.lstData.GetRow()
+        row = self.lstData.GetRow()
         result = wx.MessageBox(
-                     "Are you sure to delete product {0}".format(prodid),
+                     "Are you sure to delete {0}".format(row),
                      R.String.TITLE_DELETE,
                      wx.CENTER|wx.YES_NO|wx.ICON_QUESTION,
                      self)
 
         if result == wx.YES:
             try:
-                DBUtil.delete(self.tablename, (prodid,))
+                DBUtil.delete(self.tablename, row)
 
                 self.lstData.Delete()
             except Exception as exp:
                 wx.MessageBox(exp.message + ",\nDelete failed",
                               R.String.TITLE_FAILURE)
-
-
-    def OnModify(self, event):
-        dlg = ProdDlg(self, R.Value.MODE_MODIFY)
-
-        dlg.prodid, dlg.proddesc, dlg.barcode = self.lstData.GetRow()
-
-        if dlg.ShowModal() == wx.ID_OK:
-            try:
-                DBUtil.update(self.tablename,
-                         (dlg.prodid,), (dlg.proddesc, dlg.barcode))
-
-                self.refreshData()
-            except Exception as exp:
-                wx.MessageBox(exp.message + ",\nModify failed",
-                              R.String.TITLE_FAILURE)
-
-        dlg.Destroy()
 
 
     def OnImport(self, event):

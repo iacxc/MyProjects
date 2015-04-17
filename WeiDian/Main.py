@@ -5,8 +5,8 @@ import wx
 
 import resource as R
 
-from Catalog import CatalogFrame
-
+from DataMan import DataManFrame
+from dialogs import ProdDlg, CustomerDlg
 
 class MainFrame(wx.Frame):
     def __init__(self, parent=None, title=""):
@@ -14,22 +14,32 @@ class MainFrame(wx.Frame):
 
         menu = wx.Menu()
         menu.Append(R.Id.ID_CATALOG, R.String.MENU_CATALOG)
+        menu.Append(R.Id.ID_CUSTOMER, R.String.MENU_CUSTOMER)
         menu.AppendSeparator()
         menu.Append(wx.ID_EXIT, R.String.MENU_EXIT)
 
         menubar = wx.MenuBar()
-        menubar.Append(menu, R.String.MENU_TOOL)
+        menubar.Append(menu, R.String.MENU_DATA)
 
         self.SetMenuBar(menubar)
 
-        self.__frmcatalog = CatalogFrame(self, title=R.String.TITLE_CATALOG)
-
         self.Bind(wx.EVT_MENU, self.OnCatalog, id=R.Id.ID_CATALOG)
+        self.Bind(wx.EVT_MENU, self.OnCustomer, id=R.Id.ID_CUSTOMER)
         self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
 
 
     def OnCatalog(self, event):
-        self.__frmcatalog.Show()
+        DataManFrame(self,
+                     R.String.TITLE_CATALOG,
+                     R.String.TABLE_CATALOG,
+                     ProdDlg).Show()
+
+
+    def OnCustomer(self, event):
+        DataManFrame(self,
+                     R.String.TITLE_CUSTOMER,
+                     R.String.TABLE_CUSTOMER,
+                     CustomerDlg).Show()
 
 
     def OnExit(self, event):
