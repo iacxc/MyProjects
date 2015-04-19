@@ -1,5 +1,7 @@
 #!/usr/bin/python -O
 
+# -*- coding: utf-8 -*-
+
 import os, sys
 import wx
 
@@ -12,14 +14,19 @@ class MainFrame(wx.Frame):
     def __init__(self, parent=None, title=""):
         super(MainFrame, self).__init__(parent, -1, title, size=(600, 300))
 
-        menu = wx.Menu()
-        menu.Append(R.Id.ID_CATALOG, R.String.MENU_CATALOG)
-        menu.Append(R.Id.ID_CUSTOMER, R.String.MENU_CUSTOMER)
-        menu.AppendSeparator()
-        menu.Append(wx.ID_EXIT, R.String.MENU_EXIT)
+        menudata = wx.Menu()
+        menudata.Append(R.Id.ID_CATALOG, R.String.MENU_CATALOG)
+        menudata.Append(R.Id.ID_CUSTOMER, R.String.MENU_CUSTOMER)
+        menudata.AppendSeparator()
+        menudata.Append(wx.ID_EXIT, R.String.MENU_EXIT)
+
+        menuprod = wx.Menu()
+        menuprod.Append(R.Id.ID_BUY, R.String.MENU_BUY)
+        menuprod.Append(R.Id.ID_SELL, R.String.MENU_SELL)
 
         menubar = wx.MenuBar()
-        menubar.Append(menu, R.String.MENU_DATA)
+        menubar.Append(menudata, R.String.MENU_DATA)
+        menubar.Append(menuprod, R.String.MENU_PROD)
 
         self.SetMenuBar(menubar)
 
@@ -29,17 +36,19 @@ class MainFrame(wx.Frame):
 
 
     def OnCatalog(self, event):
-        DataManFrame(self,
+        frm = DataManFrame(self,
                      R.String.TITLE_CATALOG,
-                     R.String.TABLE_CATALOG,
-                     ProdDlg).Show()
+                     R.Value.BASE_CATALOG,
+                     ProdDlg)
+        frm.Show()
 
 
     def OnCustomer(self, event):
-        DataManFrame(self,
+        frm = DataManFrame(self,
                      R.String.TITLE_CUSTOMER,
-                     R.String.TABLE_CUSTOMER,
-                     CustomerDlg).Show()
+                     R.Value.BASE_CUSTOMER,
+                     CustomerDlg)
+        frm.Show()
 
 
     def OnExit(self, event):

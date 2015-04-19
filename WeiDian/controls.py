@@ -1,4 +1,6 @@
 
+# -*- coding: utf-8 -*-
+
 import csv
 import wx
 
@@ -15,7 +17,7 @@ class DataListCtrl(wx.ListView):
         self.ClearAll()
 
         for index, title in enumerate(titles):
-            self.InsertColumn(index, title)
+            self.InsertColumn(index, unicode(title, "utf-8"))
             self.SetColumnWidth(index, len(title)*30)
 
         for row in rows:
@@ -32,43 +34,4 @@ class DataListCtrl(wx.ListView):
         colcount = self.GetColumnCount()
         return [ self.GetItemText(self.__cur_row, cindex)
                                for cindex in range(colcount) ]
-
-
-    def Delete(self):
-        assert self.__cur_row >= 0 and self.__cur_row < self.GetItemCount()
-        self.DeleteItem(self.__cur_row)
-        self.__cur_row = -1
-
-
-    def LoadFrom(self, path):
-        with file(path, "rb") as csvfile:
-            reader = csv.reader(csvfile)
-
-            rows = [ [unicode(item, "utf-8") for item in row]
-                                            for row in reader ]
-
-        return rows
-
-
-    def SaveTo(self, path):
-        with file(path, "wb") as csvfile:
-            writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-
-            colcount = self.GetColumnCount()
-
-            for rindex in range(self.GetItemCount()):
-                row = [self.GetItemText(rindex, cindex).encode("utf-8")
-                                      for cindex in range(colcount)]
-
-                writer.writerow(row)
-
-
-    def Dump(self):
-
-        colcount = self.GetColumnCount()
-        rows = []
-        for rindex in range(self.GetItemCount()):
-            rows.append([self.GetItemText(rindex, cindex).encode("utf-8")
-                              for cindex in range(colcount)])
-        return rows
 

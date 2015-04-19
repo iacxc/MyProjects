@@ -1,5 +1,7 @@
 
+# -*- coding: utf-8 -*-
 
+import csv
 import wx
 
 import DBUtil
@@ -7,10 +9,15 @@ import resource as R
 from controls import DataListCtrl
 
 
+
 class DataManFrame(wx.Frame):
-    def __init__(self, parent, title, tablename, dialog):
-        super(DataManFrame, self).__init__(parent, title='DataMan - ' + title)
-        self.tablename = tablename
+    def __init__(self, parent, title, basename, dialog):
+        super(DataManFrame, self).__init__(parent,
+                title='%s - %s' % (R.String.TITLE_DATAMAN, title),
+                size=(800,500))
+
+        self.tablename = "T_" + basename
+        self.viewname = "V_" + basename
         self.dialog = dialog
 
         self.SetupWindow()
@@ -22,35 +29,39 @@ class DataManFrame(wx.Frame):
 
         self.lstData = DataListCtrl(panel)
 
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        hbox.AddMany([(wx.Button(panel, R.Id.ID_ADD,    R.String.BTN_ADD),
+        btnszr = wx.StdDialogButtonSizer()
+
+        btnszr.AddMany([(wx.Button(panel, R.Id.ID_ADD,    R.String.BTN_ADD),
                             1, wx.EXPAND),
-                      (wx.Button(panel, R.Id.ID_DELETE, R.String.BTN_DELETE),
+                        (wx.Button(panel, R.Id.ID_DELETE, R.String.BTN_DELETE),
                             1, wx.EXPAND),
-                      (wx.Button(panel, R.Id.ID_IMPORT, R.String.BTN_IMPORT),
+                        (wx.Button(panel, R.Id.ID_IMPORT, R.String.BTN_IMPORT),
                             1, wx.EXPAND),
-                      (wx.Button(panel, R.Id.ID_EXPORT, R.String.BTN_EXPORT),
+                        (wx.Button(panel, R.Id.ID_EXPORT, R.String.BTN_EXPORT),
                             1, wx.EXPAND),
-                      (wx.Button(panel, R.Id.ID_DUMP, R.String.BTN_DUMP),
+                        (wx.Button(panel, R.Id.ID_DUMP,   R.String.BTN_DUMP),
+                            1, wx.EXPAND),
+                        (wx.Button(panel, wx.ID_OK, R.String.BTN_RETURN),
                             1, wx.EXPAND),
                       ])
 
         vbox.Add(self.lstData, 1, wx.EXPAND, border=R.Value.BORDER)
-        vbox.Add(hbox, 0, wx.EXPAND, border=R.Value.BORDER)
+        vbox.Add(btnszr, 0, wx.EXPAND, border=R.Value.BORDER)
         panel.SetSizer(vbox)
 
-        self.Bind(wx.EVT_BUTTON, self.OnAdd, id=R.Id.ID_ADD)
+        self.Bind(wx.EVT_BUTTON, self.OnAdd,    id=R.Id.ID_ADD)
         self.Bind(wx.EVT_BUTTON, self.OnDelete, id=R.Id.ID_DELETE)
         self.Bind(wx.EVT_BUTTON, self.OnImport, id=R.Id.ID_IMPORT)
         self.Bind(wx.EVT_BUTTON, self.OnExport, id=R.Id.ID_EXPORT)
-        self.Bind(wx.EVT_BUTTON, self.OnDump, id=R.Id.ID_DUMP)
+        self.Bind(wx.EVT_BUTTON, self.OnDump,   id=R.Id.ID_DUMP)
+        self.Bind(wx.EVT_BUTTON, self.OnOK,   id=wx.ID_OK)
 
-        self.SetSize((800, 600))
         self.refreshData()
 
 
     def refreshData(self):
-        self.lstData.RefreshData(DBUtil.get_table_data(self.tablename))
+        self.lstData.RefreshData(
+            DBUtil.get_data('SELECT * FROM %s' % self.viewname))
 
 
     def OnAdd(self, event):
@@ -79,7 +90,7 @@ class DataManFrame(wx.Frame):
             try:
                 DBUtil.delete(self.tablename, row)
 
-                self.lstData.Delete()
+                self.refreshData()
             except Exception as exp:
                 wx.MessageBox(exp.message + ",\nDelete failed",
                               R.String.TITLE_FAILURE)
@@ -94,8 +105,7 @@ class DataManFrame(wx.Frame):
             path = dlg.GetPath()
 
             try:
-                DBUtil.set_table_data(self.tablename,
-                                  self.lstData.LoadFrom(path))
+                DBUtil.load_table(self.tablename, path)
                 self.refreshData()
             except Exception as exp:
                 wx.MessageBox(exp.message + ",\nImport failed",
@@ -112,7 +122,7 @@ class DataManFrame(wx.Frame):
         if dlg.ShowModal() ==  wx.ID_OK:
             path = dlg.GetPath()
             try:
-                self.lstData.SaveTo(path)
+                DBUtil.save_table(self.tablename, path)
             except Exception as exp:
                 wx.MessageBox(exp.message + ",\nExport failed",
                               R.String.TITLE_FAILURE)
@@ -136,4 +146,5 @@ class DataManFrame(wx.Frame):
         dlg.Destroy()
 
 
-
+    def OnOK(self, event):
+        self.Close()

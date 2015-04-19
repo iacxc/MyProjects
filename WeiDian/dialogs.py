@@ -71,7 +71,7 @@ class CustomerDlg(DataDialog):
     def initUI(self):
         msizer = wx.BoxSizer(wx.VERTICAL)
 
-        inputszr = wx.FlexGridSizer(6, 2, R.Value.BORDER, R.Value.BORDER)
+        inputszr = wx.FlexGridSizer(7, 2, R.Value.BORDER, R.Value.BORDER)
 
         inputszr.AddGrowableCol(1)
 
@@ -80,7 +80,8 @@ class CustomerDlg(DataDialog):
         self.txtCellphone = wx.TextCtrl(self)
         self.txtWeixin = wx.TextCtrl(self)
         self.txtQQ = wx.TextCtrl(self)
-        self.txtOther = wx.TextCtrl(self, size=(300, 60), style=wx.TE_MULTILINE)
+        self.txtAddress = wx.TextCtrl(self, size=(300, 60), style=wx.TE_MULTILINE)
+        self.txtOther = wx.TextCtrl(self, size=(300, 40), style=wx.TE_MULTILINE)
 
         inputszr.AddMany([(wx.StaticText(self, -1, R.String.ST_CUSTID),
                                0, wx.ALIGN_CENTER_VERTICAL),
@@ -97,13 +98,16 @@ class CustomerDlg(DataDialog):
                           (wx.StaticText(self, -1, R.String.ST_CUSTQQ),
                                0, wx.ALIGN_CENTER_VERTICAL),
                           (self.txtQQ, 1, wx.EXPAND),
+                          (wx.StaticText(self, -1, R.String.ST_CUSTADDRESS),
+                               0, wx.ALIGN_TOP),
+                          (self.txtAddress, 1, wx.EXPAND),
                           (wx.StaticText(self, -1, R.String.ST_CUSTOTHER),
                                0, wx.ALIGN_TOP),
                           (self.txtOther,  1, wx.EXPAND)])
 
         btnszr = wx.StdDialogButtonSizer()
-        btnszr.AddButton(wx.Button(self, wx.ID_OK))
-        btnszr.AddButton(wx.Button(self, wx.ID_CANCEL))
+        btnszr.AddButton(wx.Button(self, wx.ID_OK, R.String.BTN_OK))
+        btnszr.AddButton(wx.Button(self, wx.ID_CANCEL, R.String.BTN_CANCEL))
         btnszr.Realize()
 
         msizer.AddMany([(inputszr, 0, wx.EXPAND|wx.ALL, R.Value.BORDER),
@@ -120,4 +124,5 @@ class CustomerDlg(DataDialog):
                 self.txtCellphone.GetValue(),
                 self.txtWeixin.GetValue(),
                 self.txtQQ.GetValue(),
+                self.txtAddress.GetValue(),
                 self.txtOther.GetValue())

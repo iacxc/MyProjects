@@ -1,6 +1,10 @@
-#!/usr/bin/python -O
+
+# -*- coding: utf-8 -*-
 
 DBFILE = 'WeiDian.db3'
+
+BASE_CATALOG  = 'CATALOG'
+BASE_CUSTOMER = 'CUSTOMER'
 
 FONTSIZE = 13
 BORDER = 5
