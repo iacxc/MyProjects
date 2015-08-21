@@ -1,0 +1,80 @@
+#!/usr/bin/python -O
+
+import socket
+from SocketServer import ThreadingMixIn
+from SimpleXMLRPCServer import SimpleXMLRPCServer
+from daemon import Daemon
+
+class AsyncXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
+    pass
+
+
+class SpDaemon(Daemon):
+    def __init__(self, host, port):
+        Daemon.__init__(self, "/tmp/spdaemon.pid")
+
+        self.__server = AsyncXMLRPCServer((host, port), allow_none=True)
+
+        self.__server.register_function(self.hello, "hello")
+        self.__server.register_function(self.check, "check")
+        self.__server.register_function(self.stop, "stop")
+        self.__server.register_multicall_functions()
+
+
+    def run(self):
+        self.__server.serve_forever()
+
+
+    def hello(self):
+        return "Hello"
+
+
+    def check(self):
+        return ("Checking...",)
+
+
+    def stop(self):
+        Daemon.stop(self)
+        self.__server.shutdown()
+        return "Stopped"
+
+
+def start_daemon(host,port):
+    try:
+        daemon = SpDaemon(host, port)
+        print "Listening on port {0}:{1}".format(host, port)
+
+        daemon.start()
+
+    except socket.error:
+        print "Daemon has already started"
+        pass
+
+
+if __name__ == "__main__":
+    import optparse
+    parser = optparse.OptionParser()
+
+    parser.add_option("-p", "--port", dest="port",
+               type=int, default=50000,
+               help="port number of rpc server, [default: %default]")
+    parser.add_option("--check", action="store_true",
+               help="do check")
+    parser.add_option("--stop", action="store_true",
+               help="stop all processes")
+
+    opts, args = parser.parse_args()
+
+    host = socket.getfqdn()
+    start_daemon(host, opts.port)
+
+    from xmlrpclib import ServerProxy
+    server = ServerProxy("http://{0}:{1}".format(host, opts.port))
+
+    print server.hello()
+
+    if opts.check:
+        print server.check()
+
+    if opts.stop:
+        print server.stop()
