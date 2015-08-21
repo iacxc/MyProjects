@@ -4,6 +4,16 @@
 import sqlite3
 from datetime import date, time, timedelta
 
+
+def daterange(start, end):
+    dates = []
+    while start <= end:
+        dates.append(start)
+        start += timerange(days=1)
+
+    return dates
+
+
 conn = sqlite3.connect("workbook.db")
 cursor = conn.cursor()
 
@@ -11,13 +21,8 @@ cursor.execute("select distinct card, workno, depart, name from sheet1")
 
 ids = [row for row in cursor.fetchall()]
 
-all_dates = []
-start_date = date(2015, 6, 1)
-while start_date <= date(2015, 8, 13):
-    all_dates.append(start_date.strftime("%Y-%m-%d"))
-    start_date += timedelta(days=1)
-
-print all_dates
+all_dates = [d.strftime("%Y-%m-%d")
+             for d in datarange(date(2015, 6, 1), date(2015, 8, 13))]
 
 csv_file = file("x.csv", "w")
 
@@ -44,6 +49,7 @@ order by date, time""", row_id)
 
     csv_file.write(",".join([row_id[0]] + all_dates) + "\n")
     csv_file.write(",".join(times) + "\n")
+
 csv_file.close()
 
 
