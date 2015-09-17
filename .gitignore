@@ -1,4 +1,5 @@
 doctorcard
 *.pyc
 *.pyo
+*.class
 .idea
