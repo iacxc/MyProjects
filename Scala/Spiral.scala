@@ -1,4 +1,4 @@
-import Element._
+import element._
 
 object Spiral {
     val space = Element(" ")
