@@ -73,6 +73,7 @@ abstract class Element {
     override def toString = contents mkString "\n"
 }
 
+/*
 import org.specs._
 object ElementSpecification extends Specification {
     "A Uniform Element" should {
@@ -89,3 +90,4 @@ object ElementSpecification extends Specification {
         }
     }
 }
+*/
