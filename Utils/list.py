@@ -22,7 +22,7 @@ class Nil(object):
 
 
 class Cons(object):
-    def __init__(self, head, tail=Nil):
+    def __init__(self, head, tail):
         self.__head = head
         self.__tail = tail
 
@@ -43,6 +43,7 @@ class Cons(object):
 
 
 def List(*items):
+    """ create a list """
     if len(items) == 0:
         return Nil()
     else:
@@ -50,6 +51,7 @@ def List(*items):
 
 
 def reverse(alist):
+    """ reverse a list """
     def rec(lst, acc):
         if lst.isEmpty:
             return acc
@@ -58,14 +60,22 @@ def reverse(alist):
 
     return rec(alist, Nil())
 
-#    if list.isEmpty or list.tail.isEmpty:
-#        return list
-#
-#    return Cons(reverse(list.tail), List(list.head))
+
+def concat(list1, list2):
+    """ concat two lists """
+    if list1.isEmpty:
+        return list2
+    else:
+        return Cons(list1.head, concat(list1.tail, list2))
 
 
-l = List(1, 2, List("hello", "world"), "a", "b", List(List('aa', 'bb')))
-print l
-l2 = List(List(List('aa', 'bb')), "b", "a", List("hello", "world"), 2, 1) 
-print l2
-print reverse(l)
+l1 = List(1, 2, List("hello", "world"), "a", "b", List(List('aa', 'bb')))
+print l1
+print reverse(l1)
+
+l2 = List(1, 2, 3)
+l3 = List("a", "b")
+print concat(l2, l3)
+print concat(l3, l2)
+print reverse(concat(l2, l3))
+
