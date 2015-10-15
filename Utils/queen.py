@@ -15,7 +15,7 @@ def find_queen(start_row, pos):
     for col in range(len(pos)):
         good_pos = True
         for row in range(start_row):
-            if pos[row] in (col, col-start_row+row, col+start_row-row):
+            if pos[row] in (col, col - start_row + row, col + start_row - row):
                 good_pos = False
                 break
 
@@ -25,6 +25,6 @@ def find_queen(start_row, pos):
                 yield p
 
 
-queen_pos = [-1] * 6
+queen_pos = [-1] * 8
 for pos in find_queen(0, queen_pos):
     print_queen(pos)
