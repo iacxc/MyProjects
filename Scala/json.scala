@@ -18,4 +18,11 @@ class JSON extends JavaTokenParsers {
         | "true" ^^ (x => true)
         | "false" ^^ (x => false)
         )
+
+    def parse(input: String): Map[String, Any] = 
+        parseAll(obj, input) match {
+            case Success(e, _) => e
+            case f: NoSuccess => Map("error" -> f.msg)
+        }
+
 }
