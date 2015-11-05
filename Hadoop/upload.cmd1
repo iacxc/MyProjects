@@ -1,0 +1,10 @@
+#!/bin/sh -x
+
+#Desc: upload jar files
+curl --noproxy localhost -u caiche:caiche@hpe \
+    -L -T /usr/hdp/current/knox-user/samples/hadoop-examples.jar \
+    -X put -k 'https://localhost:8443/gateway/default/webhdfs/v1/user/caiche/knox-sample/lib/hadoop-examples.jar?op=CREATE' 
+
+curl --noproxy localhost -u caiche:caiche@hpe \
+    -L -T /usr/hdp/current/knox-user/README \
+    -X put -k 'https://localhost:8443/gateway/default/webhdfs/v1/user/caiche/knox-sample/input/README?op=CREATE' 

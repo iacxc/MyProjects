@@ -1,0 +1,21 @@
+#!/bin/sh 
+
+JOBID=$1
+
+if [ "$JOBID" == "" ]; then
+    echo "No job id"
+    exit
+fi
+
+#Desc: check job status, check result
+CURL='curl --noproxy localhost -u caiche:caiche@hpe '
+
+JS=`$CURL --max-time 5 -k "https://localhost:8443/gateway/default/templeton/v1/jobs/$JOBID"`
+if [ "$JS" != "" ]; then
+    echo $JS | json_pp
+fi
+
+$CURL -k 'https://localhost:8443/gateway/default/webhdfs/v1/user/caiche/knox-sample/output?op=LISTSTATUS' | json_pp
+
+$CURL -L -k 'https://localhost:8443/gateway/default/webhdfs/v1/user/caiche/knox-sample/output/part-r-00000?op=OPEN'
+
