@@ -1,0 +1,5 @@
+#!/bin/sh -x
+
+#Desc: access yarn resource manager
+curl --noproxy localhost http://localhost:8088/ws/v1/cluster |json_pp
+

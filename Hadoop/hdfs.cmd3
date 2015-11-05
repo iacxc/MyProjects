@@ -1,0 +1,4 @@
+#!/bin/sh -x
+
+#Desc: list files with user:hdfs (hdfs superuser)
+curl --noproxy localhost "http://localhost:50070/webhdfs/v1/user/caiche?op=LISTSTATUS&user.name=hdfs" | json_pp
