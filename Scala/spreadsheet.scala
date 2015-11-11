@@ -12,11 +12,11 @@ class Spreadsheet(val height: Int, val width: Int) extends ScrollPane {
         rowHeight = 25
         autoResizeMode = Table.AutoResizeMode.Off
         showGrid = true
-        gridColor = new java.awt.Color(150, 150, 150)
+        gridColor = new java.awt.Color(50, 50, 50)
 
         override def rendererComponent(isSelected: Boolean,
-                                        hasFocus: Boolean,
-                                        row: Int, column: Int): Component =
+                                       hasFocus: Boolean,
+                                       row: Int, column: Int): Component =
             if (hasFocus) new TextField(userData(row, column))
             else
                 new Label(cellModel.cells(row)(column).toString) {
@@ -42,7 +42,7 @@ class Spreadsheet(val height: Int, val width: Int) extends ScrollPane {
 
     val rowHeader =
         new ListView((0 until height) map (_.toString)) {
-            fixedCellWidth = 30
+            fixedCellWidth = 35
             fixedCellHeight = table.rowHeight
         }
 
