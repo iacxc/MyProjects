@@ -1,42 +1,37 @@
 
-from datetime import datetime
-from FileUtils import getpermission
 
-
-def ts2str(timestamp):
-    dt = datetime.fromtimestamp(timestamp * 0.001)
-    return dt.strftime("%m %d %H:%M")
+#exports
+__all__ = ('Hdfs', 'Knox')
 
 
 import requests
+from datetime import datetime
+from FileUtils import getpermission
+
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
+def ts2str(timestamp):
+    """ convert timestamp to string """
+    dt = datetime.fromtimestamp(timestamp * 0.001)
+    return dt.strftime("%m %d %H:%M")
+
+
 def get_opstr(operation):
-    return {"ls" : "LISTSTATUS",
-            "stat" : "GETFILESTATUS",
-            "cat" : "OPEN",
+    return {"ls"    : "LISTSTATUS",
+            "stat"  : "GETFILESTATUS",
+            "cat"   : "OPEN",
             "mkdir" : "MKDIRS",
             "cp"    : "CREATE",
             "append": "APPEND",
             "chmod" : "SETPERMISSION",
             "chown" : "SETOWNER",
-            "rename": "RENAME"}.get(operation) 
+            "delete": "DELETE",
+            "rename": "RENAME"}[operation]
 
 
-def Get(url, operation, user=None, auth=None, params=None):
-    if params is None: 
-        params = {}
-
-    params["op"] = get_opstr(operation)
-    if user:
-        params["user.name"] = user
-
-    return requests.get(url, auth=auth, verify=False, params=params)
-
-
-def Put(url, operation, user=None, auth=None, params=None, filename=None):
+def Request(method, url, operation, user=None, auth=None, params=None, filename=None):
     if params is None:
         params = {}
 
@@ -45,33 +40,24 @@ def Put(url, operation, user=None, auth=None, params=None, filename=None):
         params["user.name"] = user
 
     if filename is None:
-        return requests.put(url, auth=auth, verify=False, params=params)
+        return requests.request(method, url, auth=auth, verify=False, params=params)
     else:
         with file(filename) as f:
-            return requests.put(url, data=f.read(), 
+            return requests.request(method, url, data=f.read(),
                                 auth=auth, verify=False, params=params)
 
 
-def Post(url, operation, filename, user=None, auth=None, params=None):
-    if params is None:
-        params = {}
+def Get(url, operation, user=None, auth=None, params=None):
+    return Request("GET", url, operation, user, auth, params)
 
-    params["op"] = get_opstr(operation)
-    if user:
-        params["user.name"] = user
+def Delete(url, user=None, auth=None, params=None):
+    return Request("DELETE", url, "delete", user, auth, params)
 
-    with file(filename) as f:
-        return requests.post(url, data=f.read(), 
-                             auth=auth, verify=False, params=params)
+def Put(url, operation, user=None, auth=None, params=None, filename=None):
+    return Request("PUT", url, operation, user, auth, params, filename)
 
-
-def Delete(url, user=None, auth=None):
-    params = {"op" : "DELETE"}
-
-    if user:
-        params["user.name"] = user
-
-    return requests.delete(url, auth=auth, verify=False)
+def Post(url, operation, user=None, auth=None, params=None, filename=None):
+    return Request("POST", url, operation, user, auth, params, filename)
 
 
 class HadoopUtil(object):
@@ -137,11 +123,12 @@ class Hdfs(HadoopUtil):
 
 
     def append(self, localfile, filename) :
-        resp = Post(self.weburl + filename, "append", localfile, self.__user)
+        resp = Post(self.weburl + filename, "append", self.__user,
+                    filename=localfile)
         if resp.status_code == requests.codes.ok:
             return True
         else:
-            if __debug__: print resp.status_code
+            if __debug__: print resp.status_code, resp.text
             return False
 
 
@@ -240,15 +227,17 @@ if __name__ == "__main__":
     import sys
 
     host = sys.argv[1] if len(sys.argv) > 1 else "localhost"
-    hdfs = Hdfs(host, "caiche")
-    print hdfs.cat("/user/caiche/test.y")
+    user = sys.argv[2] if len(sys.argv) > 2 else "caiche"
+    user_pass = sys.argv[3] if len(sys.argv) > 3 else "caiche-password"
+    hdfs = Hdfs(host, user)
+    #print hdfs.cat("/user/caiche/test.x")
     #print hdfs.mkdir("/user/caiche/test2")
     #print hdfs.stat("/user/caiche/test.1")
     #print hdfs.delete("/user/caiche/test.3")
     #print hdfs.rename("/user/caiche/test.4", "/user/caiche/test.t")
-    print hdfs.append("run.cmd1", "/user/caiche/tttt.x")
-    print "\n".join(hdfs.ls("/user/caiche"))
+    #print hdfs.append("run.cmd1", "/user/caiche/test.x")
+    #print "\n".join(hdfs.ls("/user/caiche"))
 
-    #knox = Knox(host, "caiche", "caiche-password")
-    #print "\n".join(knox.ls("/user/caiche"))
+    knox = Knox(host, user, user_pass)
+    print "\n".join(knox.ls("/user/caiche"))
     #print knox.cat("/user/caiche/test.1")
