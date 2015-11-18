@@ -31,7 +31,8 @@ def get_opstr(operation):
             "rename": "RENAME"}[operation]
 
 
-def Request(method, url, operation, user=None, auth=None, params=None, filename=None):
+def Request(method, url, operation, user=None, auth=None, 
+                                    params=None, data=None):
     if params is None:
         params = {}
 
@@ -39,12 +40,8 @@ def Request(method, url, operation, user=None, auth=None, params=None, filename=
     if user:
         params["user.name"] = user
 
-    if filename is None:
-        return requests.request(method, url, auth=auth, verify=False, params=params)
-    else:
-        with file(filename) as f:
-            return requests.request(method, url, data=f.read(),
-                                auth=auth, verify=False, params=params)
+    return requests.request(method, url, auth=auth, verify=False, 
+                                         params=params, data=data)
 
 
 def Get(url, operation, user=None, auth=None, params=None):
@@ -53,11 +50,11 @@ def Get(url, operation, user=None, auth=None, params=None):
 def Delete(url, user=None, auth=None, params=None):
     return Request("DELETE", url, "delete", user, auth, params)
 
-def Put(url, operation, user=None, auth=None, params=None, filename=None):
-    return Request("PUT", url, operation, user, auth, params, filename)
+def Put(url, operation, user=None, auth=None, params=None, data=None):
+    return Request("PUT", url, operation, user, auth, params, data)
 
-def Post(url, operation, user=None, auth=None, params=None, filename=None):
-    return Request("POST", url, operation, user, auth, params, filename)
+def Post(url, operation, user=None, auth=None, params=None, data=None):
+    return Request("POST", url, operation, user, auth, params, data)
 
 
 class HadoopUtil(object):
@@ -113,23 +110,27 @@ class Hdfs(HadoopUtil):
 
 
     def cp(self, localfile, filename) :
-        resp = Put(self.weburl + filename, "cp", self.__user, 
-                   filename=localfile, params={"overwrite" : "true"})
-        if resp.status_code in (requests.codes.ok, requests.codes.created):
-            return True
-        else:
-            if __debug__: print resp.status_code
-            return False
+        with file(localfile) as f:
+            resp = Put(self.weburl + filename, "cp", self.__user, 
+                       params={"overwrite" : "true"}, data=f.read())
+
+            if resp.status_code in (requests.codes.ok, requests.codes.created):
+                return True
+            else:
+                if __debug__: print resp.status_code
+                return False
 
 
     def append(self, localfile, filename) :
-        resp = Post(self.weburl + filename, "append", self.__user,
-                    filename=localfile)
-        if resp.status_code == requests.codes.ok:
-            return True
-        else:
-            if __debug__: print resp.status_code, resp.text
-            return False
+        with file(localfile) as f:
+            resp = Post(self.weburl + filename, "append", self.__user,
+                        data=f.read())
+
+            if resp.status_code == requests.codes.ok:
+                return True
+            else:
+                if __debug__: print resp.status_code, resp.text
+                return False
 
 
     def delete(self, filename) : 
@@ -196,14 +197,15 @@ class Knox(HadoopUtil):
         self.__user = user
         self.__password = password
 
-        self.weburl = self.baseurl + "/gateway/" + schema + "/webhdfs/v1"
+        self.weburl = self.baseurl + "/gateway/" + schema
+        self.hdfsurl = self.weburl + "/webhdfs/v1"
 
     @property
     def auth(self):
         return (self.__user, self.__password)
 
     def ls(self, dirname):
-        resp = Get(self.weburl + dirname, "ls", auth=self.auth)
+        resp = Get(self.hdfsurl + dirname, "ls", auth=self.auth)
 
         if resp.status_code == requests.codes.ok:
             fs_list = resp.json()["FileStatuses"]["FileStatus"]
@@ -213,7 +215,7 @@ class Knox(HadoopUtil):
             return {}
 
     def cat(self, filename):
-        resp = Get(self.weburl + filename, "cat", auth=self.auth)
+        resp = Get(self.hdfsurl + filename, "cat", auth=self.auth)
 
         if resp.status_code == requests.codes.ok:
             return resp.text
