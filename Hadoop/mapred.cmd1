@@ -1,0 +1,46 @@
+#!/bin/sh -x
+
+host=localhost
+CURL="curl --noproxy $host -u caiche:caiche@hpe"
+
+#Desc: 1. remove old directory
+echo "Remove old files"
+sleep 1
+$CURL -X DELETE -k "https://$host:8443/gateway/default/webhdfs/v1/user/caiche/knox-sample?op=DELETE&recursive=true"
+
+#Desc: 2. create required dirs
+echo "Create required dirs"
+sleep 1
+$CURL -X PUT -k "https://$host:8443/gateway/default/webhdfs/v1/user/caiche/knox-sample?op=MKDIRS" 
+$CURL -X PUT -k "https://$host:8443/gateway/default/webhdfs/v1/user/caiche/knox-sample/inPUT?op=MKDIRS"
+$CURL -X PUT -k "https://$host:8443/gateway/default/webhdfs/v1/user/caiche/knox-sample/lib?op=MKDIRS" 
+
+#Desc: 3. upload jar files
+echo "Upload required files"
+sleep 1
+$CURL -L -T /usr/hdp/current/knox-user/samples/hadoop-examples.jar \
+    -X PUT -k "https://$host:8443/gateway/default/webhdfs/v1/user/caiche/knox-sample/lib/hadoop-examples.jar?op=CREATE" 
+
+$CURL -L -T /usr/hdp/current/knox-user/README \
+    -X PUT -k "https://$host:8443/gateway/default/webhdfs/v1/user/caiche/knox-sample/input/README?op=CREATE" 
+
+#Desc: run mapreduce job
+echo "Run mapreduce job"
+sleep 1
+job_id=`$CURL --connect-timeout 60 -X POST \
+    -d arg=/user/caiche/knox-sample/input \
+    -d arg=/user/caiche/knox-sample/output \
+    -d jar=/user/caiche/knox-sample/lib/hadoop-examples.jar \
+    -d class=org.apache.hadoop.examples.WordCount \
+    -k https://$host:8443/gateway/default/templeton/v1/mapreduce/jar`
+
+job_id=`echo $job_id | sed 's/.*"job_/job_/' |sed 's/".*//'`
+
+echo "Fetch job status for $job_id"
+sleep 1
+$CURL --max-time 5 -k "https://$host:8443/gateway/default/templeton/v1/jobs/$job_id"
+
+$CURL -k "https://$host:8443/gateway/default/webhdfs/v1/user/caiche/knox-sample/output?op=LISTSTATUS" 
+
+$CURL -L -k "https://$host:8443/gateway/default/webhdfs/v1/user/caiche/knox-sample/output/part-r-00000?op=OPEN"
+
