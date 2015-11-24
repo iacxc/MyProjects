@@ -1,4 +1,4 @@
 #!/bin/sh -x
 
 #Desc: from knox, pass knox authentication & authorization, refused by hdfs acl
-curl -i --noproxy localhost -u guest:guest-password -k "https://localhost:8443/gateway/default/webhdfs/v1/user/caiche?op=LISTSTATUS" 
+curl -i -u guest:guest-password -k "https://localhost:8443/gateway/default/webhdfs/v1/user/caiche?op=LISTSTATUS" 

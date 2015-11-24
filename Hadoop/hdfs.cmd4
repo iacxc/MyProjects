@@ -1,4 +1,0 @@
-#!/bin/sh -x
-
-#Desc: list files with owner
-curl --noproxy localhost "http://localhost:50070/webhdfs/v1/user/caiche?op=LISTSTATUS&user.name=caiche" | json_pp

@@ -1,4 +1,4 @@
 #!/bin/sh -x
 
 #Desc: from knox, pass knox authentication, authorization and hdfs acl
-curl --noproxy localhost -u "caiche:caiche@hpe" -k "https://localhost:8443/gateway/default/webhdfs/v1/user/caiche?op=LISTSTATUS" | json_pp
+curl -u "caiche:caiche@hpe" -k "https://localhost:8443/gateway/default/webhdfs/v1/user/caiche?op=LISTSTATUS" 

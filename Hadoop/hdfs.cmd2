@@ -1,4 +1,6 @@
 #!/bin/sh -x
 
-#Desc: list files with user:root
-curl --noproxy localhost "http://localhost:50070/webhdfs/v1/user/caiche?op=LISTSTATUS&user.name=root" | json_pp
+host=localhost
+#Desc: list files with a specific user:it3
+#      but this can pass if ranger permission opened
+curl "http://$host:50070/webhdfs/v1/user/caiche?op=LISTSTATUS&user.name=it3" 

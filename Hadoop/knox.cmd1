@@ -1,4 +1,4 @@
 #!/bin/sh -x
 
 #Desc: from knox, refused by knox authentication (LDAP)
-curl --noproxy localhost -u caiche:password -k "https://localhost:8443/gateway/default/webhdfs/v1/user/caiche?op=LISTSTATUS" 
+curl -i -u caiche:password -k "https://localhost:8443/gateway/default/webhdfs/v1/user/caiche?op=LISTSTATUS" 

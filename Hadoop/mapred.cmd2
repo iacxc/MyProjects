@@ -1,0 +1,12 @@
+#!/bin/sh -x
+
+host=localhost
+CURL="curl -u caiche:caiche@hpe"
+
+#View output directory
+$CURL -k "https://$host:8443/gateway/knox_sample/webhdfs/v1/user/caiche/knox-sample/output?op=LISTSTATUS" 
+echo
+
+#View output file
+echo "Get result"
+$CURL -L -k "https://$host:8443/gateway/knox_sample/webhdfs/v1/user/caiche/knox-sample/output/part-r-00000?op=OPEN"

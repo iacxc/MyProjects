@@ -1,4 +1,4 @@
 #!/bin/sh -x
 
 #Desc: from knox, pass knox authentication, refused by knox authorization
-curl --noproxy localhost -u admin:admin-password -k "https://localhost:8443/gateway/knox_sample/webhdfs/v1/user/caiche?op=LISTSTATUS" 
+curl -i -u admin:admin-password -k "https://localhost:8443/gateway/knox_sample/webhdfs/v1/user/caiche?op=LISTSTATUS" 
