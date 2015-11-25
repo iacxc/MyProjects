@@ -5,6 +5,7 @@ __all__ = ('Hdfs', 'Knox')
 
 
 import requests
+import json
 from datetime import datetime
 from FileUtils import getpermission
 
@@ -31,30 +32,18 @@ def get_opstr(operation):
             "rename": "RENAME"}[operation]
 
 
-def Request(method, url, operation, user=None, auth=None, 
-                                    params=None, data=None):
+def Request(method, url, user=None, auth=None, params=None, data=None):
     if params is None:
         params = {}
 
-    params["op"] = get_opstr(operation)
     if user:
         params["user.name"] = user
+
+    if __debug__: print method, url, auth, params
 
     return requests.request(method, url, auth=auth, verify=False, 
                                          params=params, data=data)
 
-
-def Get(url, operation, user=None, auth=None, params=None):
-    return Request("GET", url, operation, user, auth, params)
-
-def Delete(url, user=None, auth=None, params=None):
-    return Request("DELETE", url, "delete", user, auth, params)
-
-def Put(url, operation, user=None, auth=None, params=None, data=None):
-    return Request("PUT", url, operation, user, auth, params, data)
-
-def Post(url, operation, user=None, auth=None, params=None, data=None):
-    return Request("POST", url, operation, user, auth, params, data)
 
 
 class HadoopUtil(object):
@@ -84,13 +73,35 @@ class Hdfs(HadoopUtil):
         super(Hdfs, self).__init__("http", host, 50070)
         self.__user = user
 
+    @staticmethod
+    def Get(url, operation, user=None, auth=None, params={}):
+        params["op"] = get_opstr(operation)
+
+        return Request("GET", url, user, auth, params)
+
+    @staticmethod
+    def Delete(url, user=None, auth=None, params=None):
+        params["op"] = "delete"
+        return Request("DELETE", url, user, auth, params=params)
+
+    @staticmethod
+    def Put(url, operation, user=None, auth=None, params={}, data=None):
+        params["op"] = get_opstr(operation)
+        return Request("PUT", url, user, auth, params, data)
+
+    @staticmethod
+    def Post(url, operation, user=None, auth=None, params=None, data=None):
+        params["op"] = get_opstr(operation)
+        return Request("POST", url, user, auth, params, data)
+
+
     @property
     def weburl(self):
         return self.baseurl + "/webhdfs/v1"
 
 
     def ls(self, dirname):
-        resp = Get(self.weburl + dirname, "ls", self.__user)
+        resp = Hdfs.Get(self.weburl + dirname, "ls", self.__user)
         if resp.status_code == requests.codes.ok:
             fs_list = resp.json()["FileStatuses"]["FileStatus"]
             return [self.gen_filespec(fs) for fs in fs_list]
@@ -100,7 +111,7 @@ class Hdfs(HadoopUtil):
 
 
     def mkdir(self, dirname, perm="777") : 
-        resp = Put(self.weburl + dirname, "mkdir", self.__user, 
+        resp = Hdfs.Put(self.weburl + dirname, "mkdir", self.__user, 
                    params={"permission" : perm})
         if resp.status_code == requests.codes.ok:
             return resp.json()["boolean"]
@@ -111,7 +122,7 @@ class Hdfs(HadoopUtil):
 
     def cp(self, localfile, filename) :
         with file(localfile) as f:
-            resp = Put(self.weburl + filename, "cp", self.__user, 
+            resp = Hdfs.Put(self.weburl + filename, "cp", self.__user, 
                        params={"overwrite" : "true"}, data=f.read())
 
             if resp.status_code in (requests.codes.ok, requests.codes.created):
@@ -123,7 +134,7 @@ class Hdfs(HadoopUtil):
 
     def append(self, localfile, filename) :
         with file(localfile) as f:
-            resp = Post(self.weburl + filename, "append", self.__user,
+            resp = Hdfs.Post(self.weburl + filename, "append", self.__user,
                         data=f.read())
 
             if resp.status_code == requests.codes.ok:
@@ -134,7 +145,7 @@ class Hdfs(HadoopUtil):
 
 
     def delete(self, filename) : 
-        resp = Delete(self.weburl + filename, self.__user)
+        resp = Hdfs.Delete(self.weburl + filename, self.__user)
         if resp.status_code == requests.codes.ok:
             return resp.json()["boolean"]
         else:
@@ -143,7 +154,7 @@ class Hdfs(HadoopUtil):
 
 
     def stat(self, filename):
-        resp = Get(self.weburl + filename, "stat", self.__user)
+        resp = Hdfs.Get(self.weburl + filename, "stat", self.__user)
         if resp.status_code == requests.codes.ok:
             return self.gen_filespec(resp.json()["FileStatus"])
         else:
@@ -152,7 +163,7 @@ class Hdfs(HadoopUtil):
 
 
     def cat(self, filename):
-        resp = Get(self.weburl + filename, "cat", self.__user)
+        resp = Hdfs.Get(self.weburl + filename, "cat", self.__user)
         if resp.status_code == requests.codes.ok:
             return resp.text
         else:
@@ -161,7 +172,7 @@ class Hdfs(HadoopUtil):
 
 
     def rename(self, srcname, destname):
-        resp = Put(self.weburl + srcname, "rename", self.__user,
+        resp = Hdfs.Put(self.weburl + srcname, "rename", self.__user,
                    params={"destination" : destname})
         if resp.status_code == requests.codes.ok:
             return resp.json()["boolean"]
@@ -171,7 +182,7 @@ class Hdfs(HadoopUtil):
 
 
     def chmod(self, filename, perm="777"):
-        resp = Put(self.weburl + filename, "chmod", self.__user,
+        resp = Hdfs.Put(self.weburl + filename, "chmod", self.__user,
                    params={"permission" : perm})
         if resp.status_code == requests.codes.ok:
             return True
@@ -181,7 +192,7 @@ class Hdfs(HadoopUtil):
 
 
     def chown(self, filename, owner, group=None):
-        resp = Put(self.weburl + filename, "chown", self.__user,
+        resp = Hdfs.Put(self.weburl + filename, "chown", self.__user,
                    params={"owner" : owner,
                            "group" : group})
         if resp.status_code == requests.codes.ok:
@@ -191,21 +202,32 @@ class Hdfs(HadoopUtil):
             return False
 
 
+class HCat(HadoopUtil):
+    def __init__(self, host, user):
+        super(HCat, self).__init__("http", host, 50111)
+        self.__user = user
+
+    @staticmethod
+    def Get(url, user=None, auth=None, params={}):
+        return Request("GET", url, user, auth, params)
+
+
 class Knox(HadoopUtil):
-    def __init__(self, host, user, password, schema="default"):
+    def __init__(self, host, user, password, topo="default"):
         super(Knox, self).__init__("https", host, 8443)
         self.__user = user
         self.__password = password
 
-        self.weburl = self.baseurl + "/gateway/" + schema
+        self.weburl = self.baseurl + "/gateway/" + topo
         self.hdfsurl = self.weburl + "/webhdfs/v1"
+        self.hcaturl = self.weburl + "/templeton/v1"
 
     @property
     def auth(self):
         return (self.__user, self.__password)
 
     def ls(self, dirname):
-        resp = Get(self.hdfsurl + dirname, "ls", auth=self.auth)
+        resp = Hdfs.Get(self.hdfsurl + dirname, "ls", auth=self.auth)
 
         if resp.status_code == requests.codes.ok:
             fs_list = resp.json()["FileStatuses"]["FileStatus"]
@@ -215,13 +237,39 @@ class Knox(HadoopUtil):
             return {}
 
     def cat(self, filename):
-        resp = Get(self.hdfsurl + filename, "cat", auth=self.auth)
+        resp = Hdfs.Get(self.hdfsurl + filename, "cat", auth=self.auth)
 
         if resp.status_code == requests.codes.ok:
             return resp.text
         else:
             if __debug__: print resp.status_code
-            return ""
+
+
+    def get_database(self, dbname=None):
+        url = self.hcaturl + "/ddl/database"
+        if not dbname is None:
+            url += "/" + dbname
+
+        resp = HCat.Get(url, auth=self.auth)
+
+        if resp.status_code == requests.codes.ok:
+            return resp.json()
+        else:
+            if __debug__: print resp.status_code
+
+
+    def get_table(self, dbname, tablename=None):
+        url = self.hcaturl + "/ddl/database/%s/table" % dbname 
+        if not tablename is None:
+            url += "/" + tablename
+
+        resp = HCat.Get(url, auth=self.auth)
+
+        if resp.status_code == requests.codes.ok:
+            return resp.json()
+        else:
+            if __debug__: print resp.status_code
+
 
 #
 # ---- main ----
@@ -232,8 +280,8 @@ if __name__ == "__main__":
     user = sys.argv[2] if len(sys.argv) > 2 else "caiche"
     user_pass = sys.argv[3] if len(sys.argv) > 3 else "caiche-password"
     hdfs = Hdfs(host, user)
-    #print hdfs.cat("/user/caiche/test.x")
-    #print hdfs.mkdir("/user/caiche/test2")
+    print "\n".join(hdfs.ls("/user/caiche"))
+    #print hdfs.mkdir("/user/caiche/test3")
     #print hdfs.stat("/user/caiche/test.1")
     #print hdfs.delete("/user/caiche/test.3")
     #print hdfs.rename("/user/caiche/test.4", "/user/caiche/test.t")
@@ -242,4 +290,9 @@ if __name__ == "__main__":
 
     knox = Knox(host, user, user_pass)
     print "\n".join(knox.ls("/user/caiche"))
+    print json.dumps(knox.get_database(), indent=4)
+    print json.dumps(knox.get_database("default"), indent=4)
+    print json.dumps(knox.get_table("default"), indent=4)
+    print json.dumps(knox.get_table("default", "u_data"), indent=4)
+
     #print knox.cat("/user/caiche/test.1")
