@@ -11,7 +11,7 @@ sleep 2
 #Desc: 2. create required dirs
 echo "Create required dirs"
 $CURL -X PUT -k "https://$host:8443/gateway/knox_sample/webhdfs/v1/user/caiche/knox-sample?op=MKDIRS" 
-$CURL -X PUT -k "https://$host:8443/gateway/knox_sample/webhdfs/v1/user/caiche/knox-sample/inPUT?op=MKDIRS"
+$CURL -X PUT -k "https://$host:8443/gateway/knox_sample/webhdfs/v1/user/caiche/knox-sample/input?op=MKDIRS"
 $CURL -X PUT -k "https://$host:8443/gateway/knox_sample/webhdfs/v1/user/caiche/knox-sample/lib?op=MKDIRS" 
 sleep 2
 
@@ -37,13 +37,3 @@ job_id=`echo $job_id | sed 's/.*"job_/job_/' |sed 's/".*//'`
 echo "Fetch job status for $job_id"
 sleep 1
 $CURL --max-time 5 -k "https://$host:8443/gateway/knox_sample/templeton/v1/jobs/$job_id"
-echo
-
-sleep 5
-$CURL -k "https://$host:8443/gateway/knox_sample/webhdfs/v1/user/caiche/knox-sample/output?op=LISTSTATUS" 
-echo
-
-sleep 2
-echo "Get result"
-$CURL -L -k "https://$host:8443/gateway/knox_sample/webhdfs/v1/user/caiche/knox-sample/output/part-r-00000?op=OPEN"
-echo
