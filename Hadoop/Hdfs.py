@@ -5,8 +5,20 @@ __all__ = ('Hdfs',)
 
 
 from HadoopUtil import HadoopUtil, Request, \
-                       get_opstr, gen_filespec, \
+                       gen_fileinfo, \
                        STATUS_OK, STATUS_CREATED, STATUS_NOCONTENT
+
+def get_opstr(op):
+    return {"ls"    : "LISTSTATUS",
+            "stat"  : "GETFILESTATUS",
+            "cat"   : "OPEN",
+            "mkdir" : "MKDIRS",
+            "cp"    : "CREATE",
+            "append": "APPEND",
+            "chmod" : "SETPERMISSION",
+            "chown" : "SETOWNER",
+            "delete": "DELETE",
+            "rename": "RENAME"}[op]
 
 
 class Hdfs(HadoopUtil):
@@ -30,34 +42,33 @@ class Hdfs(HadoopUtil):
 
 
     @staticmethod
-    def Get(url, operation, user=None, auth=None, params=None, curl=False):
+    def Get(url, op, user=None, auth=None, params=None, curl=False):
         if params is None: params = {}
-        params["op"] = get_opstr(operation)
+        params["op"] = get_opstr(op)
 
         return Request("GET", url, user, auth, params, curl=curl)
 
 
     @staticmethod
     def Delete(url, user=None, auth=None, curl=False):
-        params = {"op" : "delete"}
+        params = {"op" : "DELETE"}
         return Request("DELETE", url, user, auth, params=params, curl=curl)
 
 
     @staticmethod
-    def Put(url, operation, user=None, auth=None, params=None, data=None, 
+    def Put(url, op, user=None, auth=None, params=None, data=None, 
                  curl=False):
         if params is None: params = {}
-        params["op"] = get_opstr(operation)
+        params["op"] = get_opstr(op)
         return Request("PUT", url, user, auth, params, data, curl=curl)
 
 
     @staticmethod
-    def Post(url, operation, user=None, auth=None, params=None, data=None, 
+    def Post(url, op, user=None, auth=None, params=None, data=None, 
                   curl=False):
         if params is None: params = {}
-        params["op"] = get_opstr(operation)
+        params["op"] = get_opstr(op)
         return Request("POST", url, user, auth, params, data, curl=curl)
-
 
 
     def ls(self, dirname):
@@ -65,7 +76,7 @@ class Hdfs(HadoopUtil):
                         curl=self.__curl)
         if resp.status_code == STATUS_OK:
             fs_list = resp.json()["FileStatuses"]["FileStatus"]
-            return [gen_filespec(fs) for fs in fs_list]
+            return [gen_fileinfo(fs) for fs in fs_list]
         else:
             if __debug__: print resp.status_code
 
@@ -85,7 +96,7 @@ class Hdfs(HadoopUtil):
                        params={"overwrite" : "true"}, data=f.read())
 
             if resp.status_code == STATUS_CREATED:
-                return {"status" : "ok"}
+                return {"status" : "OK"}
             else:
                 if __debug__: print resp.status_code
 
@@ -96,7 +107,7 @@ class Hdfs(HadoopUtil):
                         data=f.read())
 
             if resp.status_code == STATUS_OK:
-                return {"status" : "ok"}
+                return {"status" : "OK"}
             else:
                 if __debug__: print resp.status_code, resp.text
 
@@ -112,7 +123,7 @@ class Hdfs(HadoopUtil):
     def stat(self, filename):
         resp = Hdfs.Get(self.weburl + filename, "stat", self.__user)
         if resp.status_code == STATUS_OK:
-            return gen_filespec(resp.json()["FileStatus"])
+            return gen_fileinfo(resp.json()["FileStatus"])
         else:
             if __debug__: print resp.status_code
 
@@ -138,17 +149,16 @@ class Hdfs(HadoopUtil):
         resp = Hdfs.Put(self.weburl + filename, "chmod", self.__user,
                    params={"permission" : perm})
         if resp.status_code == STATUS_OK:
-            return {"status" : "ok"}
+            return {"status" : "OK"}
         else:
             if __debug__: print resp.status_code
 
 
     def chown(self, filename, owner, group=None):
         resp = Hdfs.Put(self.weburl + filename, "chown", self.__user,
-                   params={"owner" : owner,
-                           "group" : group})
+                   params={"owner" : owner, "group" : group})
         if resp.status_code == STATUS_OK:
-            return {"status" : "ok"}
+            return {"status" : "OK"}
         else:
             if __debug__: print resp.status_code
 

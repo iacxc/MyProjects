@@ -2,7 +2,7 @@
 
 #exports
 __all__ = ("HadoopUtil", "Request",
-           "get_opstr", "gen_filespec",
+           "gen_fileinfo",
            "STATUS_OK",
            "STATUS_CREATED",
            "STATUS_NOCONTENT",
@@ -21,32 +21,19 @@ STATUS_CREATED = requests.codes.created
 STATUS_NOCONTENT = requests.codes.no_content
 
 
-def get_opstr(operation):
-    return {"ls"    : "LISTSTATUS",
-            "stat"  : "GETFILESTATUS",
-            "cat"   : "OPEN",
-            "mkdir" : "MKDIRS",
-            "cp"    : "CREATE",
-            "append": "APPEND",
-            "chmod" : "SETPERMISSION",
-            "chown" : "SETOWNER",
-            "delete": "DELETE",
-            "rename": "RENAME"}[operation]
-
-
 def getpermission(permission):
     getbit = lambda bit: {'0' : '---',
-                       '1' : '--x',
-                       '2' : '-w-',
-                       '3' : '-wx',
-                       '4' : 'r--',
-                       '5' : 'r-x',
-                       '6' : 'rw-',
-                       '7' : 'rwx'}.get(bit, '---')
+                          '1' : '--x',
+                          '2' : '-w-',
+                          '3' : '-wx',
+                          '4' : 'r--',
+                          '5' : 'r-x',
+                          '6' : 'rw-',
+                          '7' : 'rwx'}.get(bit, '---')
     return ''.join(map(getbit, permission))
 
 
-def gen_filespec(fs):
+def gen_fileinfo(fs):
     from datetime import datetime
     ts2str = lambda timestamp: \
            datetime.fromtimestamp(timestamp * 0.001).strftime("%m %d %H:%M")

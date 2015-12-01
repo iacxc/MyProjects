@@ -5,7 +5,7 @@ __all__ = ("Knox",)
 
 
 from HadoopUtil import HadoopUtil, Request, \
-                       gen_filespec, \
+                       gen_fileinfo, \
                        STATUS_OK, STATUS_CREATED, STATUS_NOCONTENT 
 from Hdfs import Hdfs
 from HCatalog import HCatalog
@@ -40,7 +40,7 @@ class Knox(HadoopUtil):
 
         if resp.status_code == STATUS_OK:
             fs_list = resp.json()["FileStatuses"]["FileStatus"]
-            return [gen_filespec(fs) for fs in fs_list]
+            return [gen_fileinfo(fs) for fs in fs_list]
         else:
             if __debug__: print resp.status_code
 
