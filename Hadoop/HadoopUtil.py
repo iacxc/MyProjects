@@ -33,17 +33,32 @@ def get_opstr(operation):
 
 
 def Request(method, url, user=None, auth=None, params=None, 
-                         data=None, headers=None):
+                         data=None, headers=None, curl=False):
     if params is None:
         params = {}
+    else:
+        if isinstance(params, str):
+            params = dict(p.split("=") for p in params.split("&"))
 
     if user:
         params["user.name"] = user
 
-    if __debug__: print method, url, auth, params
+    paramstr = "&".join("%s=%s" % (k,v) for k,v in params.items())
+
+    from urlparse import urlparse
+    uri = urlparse(url)
+
+    url = url + ("&" if len(uri.query) > 0 else "?") + paramstr
+
+    if __debug__: print method, url, auth
+    if curl:
+        print "curl -X {method} {auth} {data} {url}".format(method=method,
+               auth='' if auth is None else "-u '%s:%s'" % (auth),
+               data='' if data is None else "-d '%s'" % data,
+               url=url)
 
     return requests.request(method, url, auth=auth, verify=False, 
-                            params=params, data=data, headers=headers)
+                            data=data, headers=headers)
 
 
 class HadoopUtil(object):

@@ -9,10 +9,11 @@ STATUS_OK = 200
 STATUS_NOCONTENT = 204
 
 class Ranger(HadoopUtil):
-    def __init__(self, host, user, password):
+    def __init__(self, host, user, password, curl_out):
         super(Ranger, self).__init__("http", host, 6080)
         self.__user = user
         self.__password = password
+        self.__curl = curl_out
 
         self.weburl = self.baseurl + "/service/public/api"
         self.repourl = self.weburl + "/repository"
@@ -24,72 +25,101 @@ class Ranger(HadoopUtil):
         return (self.__user, self.__password)
 
     @staticmethod
-    def Get(url, auth):
-        return Request("GET", url, auth=auth)
+    def Get(url, auth, params=None, curl=False):
+        return Request("GET", url, auth=auth, params=params, curl=curl)
 
     @staticmethod
-    def Delete(url, auth):
-        return Request("DELETE", url, auth=auth)
+    def Delete(url, auth, curl=False):
+        return Request("DELETE", url, auth=auth, curl=curl)
 
     @staticmethod
-    def Post(url, auth, data):
-        print url, auth, data
+    def Post(url, auth, data, curl=False):
         return Request("POST", url, auth=auth, 
                        data=data, 
-                       headers={"Content-Type" : "Application/json"})
+                       headers={"Content-Type" : "Application/json"}, curl=curl)
+
+    @staticmethod
+    def Put(url, auth, data, curl=False):
+        return Request("PUT", url, auth=auth, 
+                       data=data, 
+                       headers={"Content-Type" : "Application/json"}, curl=curl)
 
 
-    def get_repository(self, id=None):
-        url = self.repourl if id is None else "%s/%s" % (self.repourl, id)
+    def get_repository(self, service_id=None):
+        url = self.repourl if service_id is None \
+                           else "%s/%s" % (self.repourl, service_id)
 
-        resp = Ranger.Get(url, auth=self.auth)
+        resp = Ranger.Get(url, auth=self.auth, curl=self.__curl)
         if resp.status_code == STATUS_OK:
-            return resp.json()
+            return resp.text
         else:
             if __debug__: print resp.status_code
 
 
-    def get_policy(self, id=None):
-        url = self.policyurl if id is None else "%s/%s" % (self.policyurl, id)
+    def get_policy(self, policy_id=None, params=None):
+        url = self.policyurl if policy_id in (None, "None") \
+                             else "%s/%s" % (self.policyurl, policy_id)
 
-        resp = Ranger.Get(url, auth=self.auth)
+        resp = Ranger.Get(url, auth=self.auth, params=params, curl=self.__curl)
         if resp.status_code == STATUS_OK:
-            return resp.json()
+            return resp.text
         else:
             if __debug__: print resp.status_code
 
-    def delete_policy(self, id):
-        resp = Ranger.Delete("%s/%s" % (self.policyurl, id), auth=self.auth)
+
+    def delete_policy(self, policy_id):
+        resp = Ranger.Delete("%s/%s" % (self.policyurl, policy_id), 
+                             auth=self.auth, 
+                             curl=self.__curl)
         if resp.status_code == STATUS_NOCONTENT:
-            return {"status": "ok"}
+            return "{'status': 'ok'}"
         else:
             if __debug__: print resp.status_code
 
 
-    def create_hdfs_policy(self, repo_name, policy_name, filename, 
-                           perm_map_list,
-                           description="", is_enabled=True, 
-                           is_recursive=True, is_audit_enabled=True):
-        if isinstance(perm_map_list, str):
-            perm_map_list = json.loads(perm_map_list)
+    def create_policy(self, service_type, service_name, policy_name, 
+                            policy_data):
+        dispatcher = getattr(self, "create_%s_policy" % service_type)
+        return dispatcher(service_name, policy_name, policy_data)
 
-        datadict = {
-            "policyName"     : policy_name,
-            "resourceName"   : filename,
-            "description"    : description,
-            "repositoryName" : repo_name,
-            "repositoryType" : "hdfs",
-            "isEnabled"      : is_enabled,
-            "isRecursive"    : is_recursive,
-            "isAuditEnabled" : is_audit_enabled,
-            "permMapList"    : perm_map_list
-        }
-        data=json.dumps(datadict)
+
+    def update_policy(self, policy_id, policy_data):
+        if isinstance(policy_data, str):
+            policy_data = json.loads(policy_data)
+
+        if __debug__:
+            print json.dumps(policy_data, indent=4)
+
+        resp = Ranger.Put("%s/%s" % (self.policyurl, policy_id), 
+                           auth=self.auth, 
+                           data=json.dumps(policy_data), 
+                           curl=self.__curl)
+        if resp.status_code == STATUS_OK:
+            return resp.text
+        else:
+            if __debug__: print resp.status_code, resp.text
+
+
+    def create_hdfs_policy(self, service_name, policy_name, policy_data):
+        if isinstance(policy_data, str):
+            policy_data = json.loads(policy_data)
+
+        policy_data.update(policyName=policy_name,
+                           repositoryName=service_name,
+                           repositoryType="hdfs")
+        policy_data.setdefault("isEnabled"     , True)
+        policy_data.setdefault("isRecursive"   , True)
+        policy_data.setdefault("isAuditEnabled", True)
+    
+        if __debug__:
+            print json.dumps(policy_data, indent=4)
+
         resp = Ranger.Post(self.policyurl, 
                            auth=self.auth, 
-                           data=data)
+                           data=json.dumps(policy_data),
+                           curl=self.__curl)
         if resp.status_code == STATUS_OK:
-            return resp.json()
+            return resp.text
         else:
             if __debug__: print resp.status_code, resp.text
 
@@ -103,6 +133,7 @@ if __name__ == "__main__":
 
     parser = OptionParser()
     parser.add_option("--host", default="localhost")
+    parser.add_option("--curl", action="store_true", default=False)
     parser.add_option("-u", "--user", default="caiche")
     parser.add_option("-p", "--password", default="caiche-password")
 
@@ -112,24 +143,16 @@ if __name__ == "__main__":
         print "Missing arguments"
         sys.exit(1)
 
-    ranger = Ranger(opts.host, opts.user, opts.password)
+    if __debug__:
+        print opts, args
+
+    ranger = Ranger(opts.host, opts.user, opts.password, opts.curl)
 
     try:
         fun = getattr(ranger, args[0])
-        print json.dumps(fun(*args[1:]), indent=4)
+        result = fun(*args[1:])
+        print json.dumps(json.loads(result), indent=4)
 
-    except AttributeError:
-        print "Unsupport method \"%s\"" % args[0]
-
-#    print ranger.create_hdfs_policy("hdp230_2_hadoop", 
-#                                    "hdfs-test-3", 
-#                                    "/user/caiche",
-#                                    [{"userList" : ["caiche"],
-#                                      "groupList" : [],
-#                                      "permList" : ["Read", "Write", "Execute"]
-#                                     },
-#                                     {"userList" : ["guest"],
-#                                      "groupList" : [],
-#                                      "permList" : ["Read", "Execute"]
-#                                     }])
+    except AttributeError as e:
+        print e
 
