@@ -3,21 +3,26 @@
 #exports
 __all__ = ('Ranger',)
 
-from HadoopUtil import HadoopUtil, Request
-
-STATUS_OK = 200
-STATUS_NOCONTENT = 204
+from HadoopUtil import HadoopUtil, Request, \
+                       STATUS_OK, STATUS_NOCONTENT 
 
 class Ranger(HadoopUtil):
+    operations = ("get_repository",
+                  "get_policy", "delete_policy", "create_policy",)
+    rootpath = "/service/public/api"
+
     def __init__(self, host, user, password, curl_out):
         super(Ranger, self).__init__("http", host, 6080)
         self.__user = user
         self.__password = password
         self.__curl = curl_out
 
-        self.weburl = self.baseurl + "/service/public/api"
+        self.weburl = self.baseurl + self.rootpath
         self.repourl = self.weburl + "/repository"
         self.policyurl = self.weburl + "/policy"
+
+    def __iter__(self):
+        return iter(self.operations)
 
 
     @property
@@ -51,7 +56,7 @@ class Ranger(HadoopUtil):
 
         resp = Ranger.Get(url, auth=self.auth, curl=self.__curl)
         if resp.status_code == STATUS_OK:
-            return resp.text
+            return resp.json()
         else:
             if __debug__: print resp.status_code
 
@@ -62,7 +67,7 @@ class Ranger(HadoopUtil):
 
         resp = Ranger.Get(url, auth=self.auth, params=params, curl=self.__curl)
         if resp.status_code == STATUS_OK:
-            return resp.text
+            return resp.json()
         else:
             if __debug__: print resp.status_code
 
@@ -72,7 +77,7 @@ class Ranger(HadoopUtil):
                              auth=self.auth, 
                              curl=self.__curl)
         if resp.status_code == STATUS_NOCONTENT:
-            return "{'status': 'ok'}"
+            return {"status": "ok"}
         else:
             if __debug__: print resp.status_code
 
@@ -95,7 +100,7 @@ class Ranger(HadoopUtil):
                            data=json.dumps(policy_data), 
                            curl=self.__curl)
         if resp.status_code == STATUS_OK:
-            return resp.text
+            return resp.json()
         else:
             if __debug__: print resp.status_code, resp.text
 
@@ -111,9 +116,6 @@ class Ranger(HadoopUtil):
         policy_data.setdefault("isRecursive"   , True)
         policy_data.setdefault("isAuditEnabled", True)
     
-        if __debug__:
-            print json.dumps(policy_data, indent=4)
-
         resp = Ranger.Post(self.policyurl, 
                            auth=self.auth, 
                            data=json.dumps(policy_data),
@@ -139,19 +141,22 @@ if __name__ == "__main__":
 
     opts, args = parser.parse_args()
 
-    if len(args) < 1:
-        print "Missing arguments"
-        sys.exit(1)
+    if __debug__: print opts, args
 
-    if __debug__:
-        print opts, args
+    if len(args) < 1:
+        print "Missing arguments, supported methods are", Ranger.operations
+        sys.exit(1)
 
     ranger = Ranger(opts.host, opts.user, opts.password, opts.curl)
 
+    method = args[0]
+    if not method in ranger:
+        print "Unsupported method '%s'" % method
+        sys.exit(1)
+
     try:
-        fun = getattr(ranger, args[0])
-        result = fun(*args[1:])
-        print json.dumps(json.loads(result), indent=4)
+        fun = getattr(ranger, method)
+        print json.dumps(fun(*args[1:]), indent=4)
 
     except AttributeError as e:
         print e
