@@ -8,10 +8,6 @@ from HadoopUtil import HadoopUtil, Request, \
                        get_opstr, gen_filespec, \
                        STATUS_OK, STATUS_CREATED, STATUS_NOCONTENT
 
-import json
-from datetime import datetime
-from FileUtils import getpermission
-
 
 class Hdfs(HadoopUtil):
     operations = ("ls", "mkdir", "cp", "append", "delete",

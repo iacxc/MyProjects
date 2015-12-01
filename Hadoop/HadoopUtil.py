@@ -11,8 +11,6 @@ __all__ = ("HadoopUtil", "Request",
 
 import requests
 import json
-from datetime import datetime
-from FileUtils import getpermission
 
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -35,7 +33,21 @@ def get_opstr(operation):
             "delete": "DELETE",
             "rename": "RENAME"}[operation]
 
+
+def getpermission(permission):
+    getbit = lambda bit: {'0' : '---',
+                       '1' : '--x',
+                       '2' : '-w-',
+                       '3' : '-wx',
+                       '4' : 'r--',
+                       '5' : 'r-x',
+                       '6' : 'rw-',
+                       '7' : 'rwx'}.get(bit, '---')
+    return ''.join(map(getbit, permission))
+
+
 def gen_filespec(fs):
+    from datetime import datetime
     ts2str = lambda timestamp: \
            datetime.fromtimestamp(timestamp * 0.001).strftime("%m %d %H:%M")
 
