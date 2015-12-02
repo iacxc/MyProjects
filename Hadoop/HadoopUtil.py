@@ -49,7 +49,8 @@ def gen_fileinfo(fs):
 
 
 def Request(method, url, user=None, auth=None, params=None, 
-                         data=None, headers=None, curl=False):
+                         data=None, headers=None, 
+                         curl=False, text=False, expected=(STATUS_OK,)):
     if params is None:
         params = {}
     else:
@@ -72,8 +73,13 @@ def Request(method, url, user=None, auth=None, params=None,
                data='' if data is None else " -d '%s'" % data,
                url=" '%s'" % url)
 
-    return requests.request(method, url, auth=auth, verify=False, 
+    resp = requests.request(method, url, auth=auth, verify=False, 
                             data=data, headers=headers)
+    if resp.status_code in expected:
+        return resp.text if text else resp.json()
+    else:
+        if __debug__: print resp.status_code, resp.text
+
 
 
 class HadoopUtil(object):

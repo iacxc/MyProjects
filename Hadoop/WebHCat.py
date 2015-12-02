@@ -1,20 +1,22 @@
 
 
 #exports
-__all__ = ("HCatalog",)
+__all__ = ("WebHCat",)
 
-from HadoopUtil import HadoopUtil, Request, \
-                       STATUS_OK
+from HadoopUtil import HadoopUtil, Request
 
-class HCatalog(HadoopUtil):
-    operations = ("get_database",
+class WebHCat(HadoopUtil):
+    operations = ("status", 
+                  "version",
+                  "runddl",
+                  "get_database",
                   "get_table",)
     rootpath = "/templeton/v1"
 
-    def __init__(self, host, user, curl_out=False):
-        super(HCatalog, self).__init__("http", host, 50111)
+    def __init__(self, host, user, curl=False):
+        super(WebHCat, self).__init__("http", host, 50111)
         self.__user = user
-        self.__curl = curl_out
+        self.__curl = curl
 
     def __iter__(self):
         return iter(self.operations)
@@ -24,36 +26,49 @@ class HCatalog(HadoopUtil):
     def Get(url, user=None, auth=None, params=None, curl=False):
         return Request("GET", url, user, auth, params, curl=curl)
 
+    @staticmethod
+    def Post(url, user=None, auth=None, data=None, curl=False):
+        return Request("POST", url, user, auth, data=data, curl=curl)
 
     @property
     def weburl(self):
         return self.baseurl + self.rootpath
 
 
+    def status(self):
+        return self.Get(self.weburl + "/status" , 
+                        self.__user, curl=self.__curl)
+
+
+    def version(self, component=None):
+        url = self.weburl + "/version"
+        if component is not None:
+            url += "/%s" % component
+
+        return self.Get(url, self.__user, curl=self.__curl)
+
+
+    def runddl(self, ddl):
+        result = self.Post(self.weburl + "/ddl", self.__user,
+                           data="exec=%s" % ddl, 
+                           curl=self.__curl)
+        return result
+            
+
     def get_database(self, dbname=None):
         url = self.weburl + "/ddl/database"
         if dbname is not None:
-            url += "/" + dbname
+            url += "/%s" % dbname
 
-        resp = HCatalog.Get(url, self.__user, curl=self.__curl)
-
-        if resp.status_code == STATUS_OK:
-            return resp.json()
-        else:
-            if __debug__: print resp.status_code
+        return self.Get(url, self.__user, curl=self.__curl)
 
 
     def get_table(self, dbname, tablename=None):
         url = self.weburl + "/ddl/database/%s/table" % dbname 
         if tablename is not None:
-            url += "/" + tablename
+            url += "/%s" % tablename
 
-        resp = HCatalog.Get(url, self.__user, curl=self.__curl)
-
-        if resp.status_code == STATUS_OK:
-            return resp.json()
-        else:
-            if __debug__: print resp.status_code
+        return self.Get(url, self.__user, curl=self.__curl)
 
 
 #
@@ -73,10 +88,10 @@ if __name__ == "__main__":
     if __debug__: print opts, args
 
     if len(args) < 1:
-        print "Missing arguments, supported methods are", HCatalog.operations
+        print "Missing arguments, supported methods are", WebHCat.operations
         sys.exit(1)
 
-    hcatalog = HCatalog(opts.host, opts.user, opts.curl)
+    hcatalog = WebHCat(opts.host, opts.user, opts.curl)
 
     method = args[0]
     if not method in hcatalog:

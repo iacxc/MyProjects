@@ -4,18 +4,18 @@
 __all__ = ('Ranger',)
 
 from HadoopUtil import HadoopUtil, Request, \
-                       STATUS_OK, STATUS_NOCONTENT 
+                       STATUS_NOCONTENT 
 
 class Ranger(HadoopUtil):
     operations = ("get_repository",
                   "get_policy", "delete_policy", "create_policy",)
     rootpath = "/service/public/api"
 
-    def __init__(self, host, user, password, curl_out):
+    def __init__(self, host, user, password, curl=False):
         super(Ranger, self).__init__("http", host, 6080)
         self.__user = user
         self.__password = password
-        self.__curl = curl_out
+        self.__curl = curl
 
         self.weburl = self.baseurl + self.rootpath
         self.repourl = self.weburl + "/repository"
@@ -54,32 +54,22 @@ class Ranger(HadoopUtil):
         url = self.repourl if service_id is None \
                            else "%s/%s" % (self.repourl, service_id)
 
-        resp = Ranger.Get(url, auth=self.auth, curl=self.__curl)
-        if resp.status_code == STATUS_OK:
-            return resp.json()
-        else:
-            if __debug__: print resp.status_code
+        return Ranger.Get(url, auth=self.auth, curl=self.__curl)
 
 
     def get_policy(self, policy_id=None, params=None):
         url = self.policyurl if policy_id in (None, "None") \
                              else "%s/%s" % (self.policyurl, policy_id)
 
-        resp = Ranger.Get(url, auth=self.auth, params=params, curl=self.__curl)
-        if resp.status_code == STATUS_OK:
-            return resp.json()
-        else:
-            if __debug__: print resp.status_code
+        return Ranger.Get(url, auth=self.auth, params=params, curl=self.__curl)
 
 
     def delete_policy(self, policy_id):
-        resp = Ranger.Delete("%s/%s" % (self.policyurl, policy_id), 
-                             auth=self.auth, 
-                             curl=self.__curl)
-        if resp.status_code == STATUS_NOCONTENT:
+        r = Ranger.Delete("%s/%s" % (self.policyurl, policy_id), 
+                          auth=self.auth, 
+                          curl=self.__curl, expected=(STATUS_NOCONTENT,))
+        if r is not None:
             return {"status": "ok"}
-        else:
-            if __debug__: print resp.status_code
 
 
     def create_policy(self, service_type, service_name, policy_name, 
@@ -95,14 +85,10 @@ class Ranger(HadoopUtil):
         if __debug__:
             print json.dumps(policy_data, indent=4)
 
-        resp = Ranger.Put("%s/%s" % (self.policyurl, policy_id), 
+        return Ranger.Put("%s/%s" % (self.policyurl, policy_id), 
                            auth=self.auth, 
                            data=json.dumps(policy_data), 
                            curl=self.__curl)
-        if resp.status_code == STATUS_OK:
-            return resp.json()
-        else:
-            if __debug__: print resp.status_code, resp.text
 
 
     def create_hdfs_policy(self, service_name, policy_name, policy_data):
@@ -116,14 +102,10 @@ class Ranger(HadoopUtil):
         policy_data.setdefault("isRecursive"   , True)
         policy_data.setdefault("isAuditEnabled", True)
     
-        resp = Ranger.Post(self.policyurl, 
+        return Ranger.Post(self.policyurl, 
                            auth=self.auth, 
                            data=json.dumps(policy_data),
                            curl=self.__curl)
-        if resp.status_code == STATUS_OK:
-            return resp.text
-        else:
-            if __debug__: print resp.status_code, resp.text
 
 
 #

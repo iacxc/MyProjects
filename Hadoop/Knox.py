@@ -5,14 +5,15 @@ __all__ = ("Knox",)
 
 
 from HadoopUtil import HadoopUtil, Request, \
-                       gen_fileinfo, \
-                       STATUS_OK, STATUS_CREATED, STATUS_NOCONTENT 
-from Hdfs import Hdfs
-from HCatalog import HCatalog
+                       gen_fileinfo
+from WebHdfs import WebHdfs
+from WebHCat import WebHCat
+from ResourceManager import ResourceManager
 
 
 class Knox(HadoopUtil):
     operations = ("ls", "cat", 
+                  "cluster_info", "cluster_metrics", "get_node",
                   "get_database", "get_table",)
 
     def __init__(self, host, user, password, topo="default", curl=False):
@@ -22,8 +23,9 @@ class Knox(HadoopUtil):
         self.__curl = curl
 
         self.weburl = self.baseurl + "/gateway/" + topo
-        self.hdfsurl = self.weburl + Hdfs.rootpath
-        self.hcaturl = self.weburl + HCatalog.rootpath
+        self.hdfsurl = self.weburl + WebHdfs.rootpath
+        self.hcaturl = self.weburl + WebHCat.rootpath
+        self.rmurl = self.weburl + ResourceManager.rootpath
 
 
     def __iter__(self):
@@ -34,25 +36,37 @@ class Knox(HadoopUtil):
     def auth(self):
         return (self.__user, self.__password)
 
+
     def ls(self, dirname):
-        resp = Hdfs.Get(self.hdfsurl + dirname, "ls",
+        r = WebHdfs.Get(self.hdfsurl + dirname, "ls",
                         auth=self.auth, curl=self.__curl)
 
-        if resp.status_code == STATUS_OK:
-            fs_list = resp.json()["FileStatuses"]["FileStatus"]
+        if r is not None:
+            fs_list = r["FileStatuses"]["FileStatus"]
             return [gen_fileinfo(fs) for fs in fs_list]
-        else:
-            if __debug__: print resp.status_code
 
 
     def cat(self, filename):
-        resp = Hdfs.Get(self.hdfsurl + filename, "cat", 
-                        auth=self.auth, curl=self.__curl)
+        return WebHdfs.Get(self.hdfsurl + filename, "cat", 
+                        auth=self.auth, curl=self.__curl, text=True)
 
-        if resp.status_code == STATUS_OK:
-            return resp.text
-        else:
-            if __debug__: print resp.status_code
+
+    def cluster_info(self):
+        return ResourceManager.Get(self.rmurl + "/info", 
+                                   auth=self.auth, curl=self.__curl)
+
+
+    def cluster_metrics(self):
+        return ResourceManager.Get(self.rmurl + "/metrics", 
+                                   auth=self.auth, curl=self.__curl)
+
+
+    def get_node(self, nodeid=None):
+        url = self.rmurl + "/nodes"
+        if nodeid is not None:
+            url += "/%s" % nodeid
+       
+        return ResourceManager.Get(url, auth=self.auth, curl=self.__curl)
 
 
     def get_database(self, dbname=None):
@@ -60,12 +74,7 @@ class Knox(HadoopUtil):
         if dbname is not None:
             url += "/" + dbname
 
-        resp = HCatalog.Get(url, auth=self.auth)
-
-        if resp.status_code == STATUS_OK:
-            return resp.json()
-        else:
-            if __debug__: print resp.status_code
+        return WebHCat.Get(url, auth=self.auth)
 
 
     def get_table(self, dbname, tablename=None):
@@ -73,12 +82,7 @@ class Knox(HadoopUtil):
         if tablename is not None:
             url += "/" + tablename
 
-        resp = HCatalog.Get(url, auth=self.auth)
-
-        if resp.status_code == STATUS_OK:
-            return resp.json()
-        else:
-            if __debug__: print resp.status_code
+        return WebHCat.Get(url, auth=self.auth)
 
 
 #
