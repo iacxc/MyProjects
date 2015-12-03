@@ -69,9 +69,9 @@ def Request(method, url, user=None, auth=None, params=None,
 
     if curl:
         print "curl -X {method}{auth}{data}{url}".format(method=method,
-               auth='' if auth is None else " -u '%s:%s'" % (auth),
-               data='' if data is None else " -d '%s'" % data,
-               url=" '%s'" % url)
+               auth="" if auth is None else " -u '%s:%s'" % (auth),
+               data="" if data is None else " -d '%s'" % data,
+               url=(" -k '%s'" if url.startswith("https") else " '%s'") % url)
 
     resp = requests.request(method, url, auth=auth, verify=False, 
                             data=data, headers=headers)
