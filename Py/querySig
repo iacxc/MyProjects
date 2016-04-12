@@ -1,0 +1,67 @@
+#!/usr/bin/python -O
+
+# return the uniqueID identifying the class of the query passed as input parameter
+# The algorithm used is the following:
+# 1-Upper case the input string
+# 2-parse character by character and
+#		- remove any single line comment
+#		- remove any multiple line comment
+#		- detect and replace any signed or unsigned numerics,
+#                    including exadecimal, decimal, approximate number form by 'a'
+#		- replace BOOLEAN literals by 'a'
+#		- replace any '*' with 'a'. This silences all literals that
+#                   uses single quotes.
+# 3- detect and replace any IN(literal, literals...) statements with
+#            IN() using regular expression
+# 4- CRC32 Hash the resulting string and return it as result
+#             (MD5 is mode computation for no reason)
+
+import re
+import binascii
+
+def query_signature(sqlstr):
+
+    REPLACED = 'a'
+
+    #remove single line comment,
+    lines = []
+    for line in sqlstr.split('\n'):
+        line = re.sub(r'--.*', '', line.strip())
+        if len(line) > 0:
+            lines.append(line)
+
+    #make it into a single line, remove the eol
+    sqlstr = ''.join(lines)
+
+    #remove multiple line comments
+    sqlstr = re.sub(r'\/\*.*?\*\/', '', sqlstr)
+
+    #make it in upper case, and skip some string constants
+    sqlstr = re.sub(r'\bUNKNOWN\b', REPLACED,
+                   re.sub(r'\bFALSE\b', REPLACED,
+                       re.sub(r'\bTRUE\b', REPLACED, sqlstr.upper())))
+
+    #skip quoted strings
+    sqlstr = re.sub(r'\'.*\'', REPLACED, sqlstr)
+
+    #skip numbers
+    sqlstr = re.sub(r'\d+', REPLACED, sqlstr)
+
+    #replace all IN (xxxx,xxx) with IN()
+    sqlstr = re.sub(r'IN\s+\(.*?\)', 'IN()', sqlstr)
+
+    #skip all spaces
+    sqlstr = re.sub(r'\s+', REPLACED, sqlstr)
+
+    print sqlstr
+    return binascii.crc32(sqlstr) & 0xFFFFFFFF
+
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) < 2:
+        sys.exit(1)
+
+    print 'In:' , sys.argv[1]
+    print 'Out:', query_signature(sys.argv[1])
+

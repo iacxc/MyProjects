@@ -1,0 +1,94 @@
+#!/usr/bin/python -O
+
+import sys
+import pyodbc
+from datetime import timedelta
+
+import mgd
+import itertools
+
+ANA_INT = 30
+
+def ana_data(evid, datas):
+    d0 = datas[0][0]
+
+    while d0 + timedelta(ANA_INT-1)  <= datas[-1][0]:
+        days_ana = [d0 + timedelta(i) for i in range(ANA_INT)]
+        datas_to_ana = [ data for data in datas
+                          if data[0] >= d0
+                              and data[0] < d0 + timedelta(ANA_INT) ]
+
+        datas_to_ana.extend( (date, 0) for date in set(days_ana) - set(data[0] for data in datas_to_ana) )
+
+        datas_to_ana.sort()
+
+        counts = [ [data[1]] for data in datas_to_ana]
+        px = mgd.ComputeMGD(counts)
+
+        datas_to_output = sorted( itertools.izip(datas_to_ana, px),
+                                  key=lambda v: (-v[1][0], v[0]),
+                                  reverse=True )
+
+        last_data = datas_to_ana[ANA_INT-1]
+        worst_data = datas_to_output[0]
+        print '{0:9} {1:^12} {2:^12} {3:8} {4:12.4f} {5:9.4f}'.format(
+                    evid, last_data[0].strftime("%Y/%m/%d"),
+                    worst_data[0][0].strftime("%Y/%m/%d"), worst_data[0][1],
+                    worst_data[1][0], worst_data[1][1]),
+
+        if worst_data[1][1] >= 5:
+            print '  <==',
+            if abs(last_data[0] - worst_data[0][0]) < timedelta(1,1):
+                print 'ALERT'
+            else:
+                print
+        else:
+            print
+
+        d0 += timedelta(1)
+
+    print
+
+
+#======== main ==========
+print '{0:9} {1:12} {2:12} {3:13} {4:9} {5:10}'.format('Event id',
+                'Current date', 'Anomaly date', 'Anomal Counts',
+                'Probility', 'Distance')
+print '{0:9} {1:12} {2:12} {3:13} {4:9} {5:10}'.format('=========',
+                '============', '============', '=============',
+                '=========', '==========')
+
+
+dbname = sys.argv[1] if len(sys.argv) > 1 else 'jade'
+
+conn_str = "DSN=vert-sq169;UID=vertica;PWD=vert"
+conn = pyodbc.connect(conn_str)
+cursor = conn.cursor()
+
+query_str = """
+   Select Event_id, Calendar_date_lct, Count(*) as Counts
+   From %s.EVENT_TEXT_TABLE
+   Group by Event_id, Calendar_date_lct
+   Order by Event_id, Calendar_date_lct;
+""" % dbname
+
+cursor.execute(query_str)
+
+rows = cursor.fetchall()
+
+evid = None
+datas = []
+for row in rows:
+    if evid is None:
+        evid = row[0]
+        datas = [ row[1:] ]
+    elif evid == row[0]:
+        datas.append( row[1:])
+    else:
+        ana_data(evid, datas)
+        evid = row[0]
+        datas = [ row[1:] ]
+
+ana_data(evid, datas)
+
+conn.close()

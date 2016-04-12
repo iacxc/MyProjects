@@ -1,0 +1,12 @@
+#!/usr/bin/python -O
+
+import sys
+import json
+
+from linkedin_wrapper import get_companies_by_domain
+from Common import flatten
+
+print json.dumps( flatten(get_companies_by_domain(domain)
+                              for domain in sys.argv[1:]),
+                  indent=4 )
+

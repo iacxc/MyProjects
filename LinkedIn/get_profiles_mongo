@@ -1,0 +1,37 @@
+#!/usr/bin/python -O
+
+import sys
+import json
+from pymongo import MongoClient
+
+from linkedin_wrapper import get_profile_by_url
+from optparse import OptionParser
+
+
+# -- main start here --
+parser = OptionParser()
+parser.add_option('-m', '--mongodb', dest = 'mongodb', action='store',
+      help='address of mongodb server')
+
+(opts, args) = parser.parse_args()
+
+if not opts.mongodb:
+    print "--mongodb cannot be empty"
+    sys.exit(1)
+
+client = MongoClient(opts.mongodb)
+
+db = client['sq']
+
+urls = ( user.get('linkedin-url') for user in db.users.find() )
+
+for profile in ( get_profile_by_url(url) for url in urls ):
+    print profile['id']
+    if profile.get('error'):
+        print profile['error']
+        continue
+
+    db.profiles.update({'linkedin-id' : profile['id']},
+                      {'$set' : profile},
+                      upsert=True)
+

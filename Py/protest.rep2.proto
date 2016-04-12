@@ -1,0 +1,13 @@
+package protest;
+
+message rep2
+{
+    message body_msg
+    {
+        required uint64 id   = 1;
+        required string name = 2;
+    }
+
+    required uint64  id    = 1;
+    repeated body_msg body = 2;
+}

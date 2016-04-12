@@ -1,0 +1,11 @@
+#!/usr/bin/python -O
+
+import sys
+import json
+
+from linkedin_wrapper import get_people_updates
+from Common import flatten
+
+print json.dumps( flatten(get_people_updates(uid) for uid in sys.argv[1:]),
+                  indent=4 )
+

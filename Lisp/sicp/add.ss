@@ -1,0 +1,13 @@
+
+(define addtest (lambda()
+    (let ((a (random 100)) (b (random 100)))
+        (let ((sum (+ a b)))
+            (display a)
+            (display '+)
+            (display b)
+            (display '=)
+            (display '?)
+            (define x (read))
+            (if (= x sum) (display 'Good) (display 'Wrong))
+            (newline)))
+    (addtest)))
