@@ -9,6 +9,8 @@ import vertica
 DRIVERSTR = "com.hp.jdbc.HPT4Driver"
 CONNSTR   = "jdbc:hpt4jdbc://%s:%s"
 
+# (Linux) export CLASSPATH={path to hpt4jdbc.jar}/hpt4jdbc.jar
+# (Windows) set CLASSPATH={path to hpt4jdbc.jar}\hpt4jdbc.jar
 def get_connstr(host, port):
     """ doc string """
     return "jdbc:hpt4jdbc://%s:%s" % (host, port)
