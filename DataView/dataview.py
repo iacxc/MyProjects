@@ -1,13 +1,13 @@
 #!/usr/bin/python -O
 
 
+import threading
 import time
 import wx
-import threading
 
-import resource as R
 from Controls import SqlEditor, DataGrid, ProgressStatusBar
 import DBUtil
+import resource as R
 
 
 # utilities
@@ -212,7 +212,7 @@ class MainFrame(wx.MDIParentFrame):
 class MainApp(wx.App):
 
     def OnInit(self):
-        self.frame = MainFrame(title=R.String.TITLE_DATAVIEW)
+        self.frame = MainFrame(title=R.String.TITLE_MAINWIN)
         self.frame.Show()
 
         return True

@@ -1,11 +1,12 @@
 #!/usr/bin/python -O
 
+TITLE_MAINWIN = 'Database Viewer'
+TITLE_DATAVIEW = 'Data Viewer'
+TITLE_FAILURE = 'Failure'
+
 MENU_TOOL = '&Tool'
 MENU_DATAVIEW = '&DataView'
 MENU_EXIT = 'E&xit'
-
-TITLE_FAILURE = 'Failure'
-TITLE_DATAVIEW = 'Data Viewer'
 
 CONNSTR_LABEL = 'Connection String:'
 QUERY_LABEL = 'Query Text:'

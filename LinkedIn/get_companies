@@ -7,7 +7,7 @@ from linkedin_wrapper import get_company
 from Common import flatten
 
 
-print json.dumps( flatten(get_company(cid) for cid in sys.argv[1:]),
-                  indent=4 )
+print(json.dumps( flatten(get_company(cid) for cid in sys.argv[1:]),
+                  indent=4 ))
 
 

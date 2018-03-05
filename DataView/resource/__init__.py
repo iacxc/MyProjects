@@ -1,5 +1,4 @@
-#!/usr/bin/python -O
 
-import Value
-import Id
-import String
+from . import Value
+from . import Id
+from . import String

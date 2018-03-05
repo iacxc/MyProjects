@@ -55,14 +55,14 @@ def get_profile(uid):
     try:
         if __debug__:
             for field in PROFILE_FIELDS:
-                print field, app.get_profile(uid, selectors=[field])
+                print(field, app.get_profile(uid, selectors=[field]))
 
         return app.get_profile(uid, selectors=PROFILE_FIELDS_2)
 
-    except exceptions.LinkedInError, e:
+    except exceptions.LinkedInError as e:
         return { 'id' : uid, 'error' : e.message }
 
-    except exceptions.LinkedInHTTPError, e:
+    except exceptions.LinkedInHTTPError as e:
         return { 'url' : uid, 'error' : e.message }
 
 
@@ -70,10 +70,10 @@ def get_profile_by_url(url):
     try:
         return app.get_profile(member_url=url, selectors=PROFILE_FIELDS_2)
 
-    except exceptions.LinkedInError, e:
+    except exceptions.LinkedInError as e:
         return { 'url' : url, 'error' : e.message }
 
-    except exceptions.LinkedInHTTPError, e:
+    except exceptions.LinkedInHTTPError as e:
         return { 'url' : url, 'error' : e.message }
 
 
@@ -87,10 +87,10 @@ def get_people_shares_by_url(url):
         else:
             return { 'url': url, 'error' : 'No shares' }
 
-    except exceptions.LinkedInError, e:
+    except exceptions.LinkedInError as e:
         return { 'url' : url, 'error' : e.message }
 
-    except exceptions.LinkedInHTTPError, e:
+    except exceptions.LinkedInHTTPError as e:
         return { 'url' : url, 'error' : e.message }
 
 
@@ -105,10 +105,10 @@ def get_people_updates(uid):
         else:
             return [{'id': uid, 'error' : 'No updates'}]
 
-    except exceptions.LinkedInError, e:
+    except exceptions.LinkedInError as e:
         return [{'id': uid, 'error' : e.message}]
 
-    except exceptions.LinkedInHTTPError, e:
+    except exceptions.LinkedInHTTPError as e:
         return { 'url' : uid, 'error' : e.message }
 
 
@@ -117,10 +117,10 @@ def get_people_updates_by_url(url):
         profile = app.get_profile(member_url=url, selectors=['id'])
         return get_people_updates(profile['id'])
 
-    except exceptions.LinkedInError, e:
+    except exceptions.LinkedInError as e:
         return [{'url': url, 'error' : e.message}]
 
-    except exceptions.LinkedInHTTPError, e:
+    except exceptions.LinkedInHTTPError as e:
         return { 'url' : url, 'error' : e.message }
 
 
@@ -141,7 +141,7 @@ def get_company(cid):
                               params={'count' : 250})
         return company['values']
 
-    except exceptions.LinkedInError, e:
+    except exceptions.LinkedInError as e:
         return [{ 'id' : cid, 'error' : e.message }]
 
 
@@ -164,7 +164,7 @@ def get_company_by_name(name):
             return [{ 'name'  : name,
                       'error' : 'Request Error: Did not find company '}]
 
-    except exceptions.LinkedInError, e:
+    except exceptions.LinkedInError as e:
         return [{ 'name'  : name, 'error' : e.message }]
 
 
@@ -178,7 +178,7 @@ def get_companies_by_domain(domain):
 
         return [ get_company(cid)[0] for cid in company_ids ]
 
-    except exceptions.LinkedInError, e:
+    except exceptions.LinkedInError as e:
         return [{ 'domain' : domain, 'error' : e.message}]
 
 
@@ -191,7 +191,7 @@ def get_company_updates(cid):
         else:
             return [{ 'id' : cid, 'error' : 'No updates'}]
 
-    except exceptions.LinkedInError, e:
+    except exceptions.LinkedInError as e:
         return [{'error'  : e.message}]
 
 # global variable
